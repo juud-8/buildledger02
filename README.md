@@ -4,13 +4,41 @@ Professional invoicing and quoting software designed specifically for tradespeop
 
 ## 🚀 Features
 
+- **Live Dashboard** - Real-time business metrics and analytics with auto-refresh
 - **Client Management** - Organize customer information and contact details
 - **Project Tracking** - Monitor jobs from quote to completion
 - **Quote Generation** - Create professional estimates with line items
 - **Invoice Creation** - Convert quotes to invoices seamlessly
 - **PDF Export** - Generate professional PDF documents
 - **Payment Tracking** - Monitor payments and outstanding balances
-- **Dashboard Analytics** - Business insights and performance metrics
+- **Real-time Updates** - Dashboard automatically updates when data changes
+- **Business Intelligence** - Comprehensive metrics and insights
+
+### 📊 Live Dashboard Features
+
+The dashboard provides real-time insights into your business with:
+
+**Key Metrics:**
+- Total invoices and revenue
+- Outstanding amounts and overdue invoices
+- Active clients and projects in progress
+- Pending quotes and paid invoices
+
+**Real-time Activity Feed:**
+- Recent invoice creation and status updates
+- New client additions
+- Quote generation activity
+- Project status changes
+
+**Upcoming Items:**
+- Invoice due dates with overdue alerts
+- Project deadlines and milestones
+- Quote expiration dates
+
+**Auto-refresh:**
+- Automatic updates when data changes anywhere in the app
+- Manual refresh button for instant updates
+- Real-time subscriptions to database changes
 
 ## 🛠 Tech Stack
 

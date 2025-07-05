@@ -34,9 +34,9 @@ export async function POST(request: NextRequest) {
         .from('quotes')
         .select(`
           quote_number,
-          projects (
+          projects!inner (
             name,
-            clients (name)
+            clients!inner (name)
           )
         `)
         .eq('id', documentId)
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Quote not found' }, { status: 404 })
       }
 
-      const clientName = quote.projects.clients.name
+      const clientName = (quote.projects as { clients?: { name?: string } })?.clients?.name || 'Client'
       emailContent = createQuoteEmail(clientName, quote.quote_number, companyName, message)
 
       // TODO: Generate PDF attachment
@@ -60,9 +60,9 @@ export async function POST(request: NextRequest) {
           invoice_number,
           total_amount,
           due_date,
-          projects (
+          projects!inner (
             name,
-            clients (name)
+            clients!inner (name)
           )
         `)
         .eq('id', documentId)
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
       }
 
-      const clientName = invoice.projects.clients.name
+      const clientName = (invoice.projects as { clients?: { name?: string } })?.clients?.name || 'Client'
       const dueDate = new Date(invoice.due_date).toLocaleDateString()
       const totalAmount = new Intl.NumberFormat('en-US', {
         style: 'currency',
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Email API error:', error)
     return NextResponse.json(
-      { error: 'Failed to send email', details: error.message },
+      { error: 'Failed to send email', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
