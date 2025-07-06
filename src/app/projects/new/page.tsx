@@ -55,8 +55,7 @@ export default function NewProjectPage() {
     setLoading(true)
     setError('')
 
-    try {
-      const projectData = {
+    const projectData = {
         name: formData.name,
         description: formData.description || null,
         client_id: formData.client_id,
@@ -66,6 +65,7 @@ export default function NewProjectPage() {
         user_id: user?.id
       }
 
+    try {
       const { error } = await supabase
         .from('projects')
         .insert([projectData])
@@ -74,8 +74,7 @@ export default function NewProjectPage() {
 
       router.push('/projects')
     } catch (error) {
-      console.error('Error creating project:', error)
-      console.error('Project data being sent:', projectData)
+      console.error('Error creating project with data:', projectData, error)
       setError(error instanceof Error ? error.message : 'Failed to create project')
     } finally {
       setLoading(false)
