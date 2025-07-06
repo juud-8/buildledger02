@@ -3,6 +3,7 @@
 import { FileText, Users, DollarSign, Clock, Calendar, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { useDashboard } from '@/lib/hooks/useDashboard'
+import QuotesAnalytics from '@/components/dashboard/QuotesAnalytics'
 
 const getActivityIcon = (iconName: string) => {
   switch (iconName) {
@@ -311,6 +312,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+          <QuotesAnalytics />
         </div>
       </div>
     </>
