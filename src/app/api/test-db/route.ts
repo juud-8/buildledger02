@@ -7,10 +7,9 @@ export async function GET() {
     const supabase = createServerClient()
     
     // Test 1: Check if we can connect to the database
-    const { data: connection, error: connectionError } = await supabase
+    const { count, error: connectionError } = await supabase
       .from('profiles')
-      .select('count')
-      .limit(1)
+      .select('*', { count: 'exact', head: true })
 
     if (connectionError) {
       return NextResponse.json({
@@ -32,7 +31,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       message: 'Database connection successful',
-      profilesTable: connection !== null ? 'exists' : 'missing',
+      profilesTable: typeof count === 'number' ? 'exists' : 'missing',
       timestamp: new Date().toISOString()
     })
 
