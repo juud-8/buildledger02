@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
 import Link from 'next/link'
 import { Plus, Search, Edit, Trash2, Calendar, Clock, CheckCircle, FileText, X } from 'lucide-react'
+import logger from '@/lib/logger'
 
 interface Project {
   id: string
@@ -61,7 +62,7 @@ export default function ProjectsPage() {
       if (error) throw error
       setProjects(data || [])
     } catch (error) {
-      console.error('Error fetching projects:', error)
+      logger.error('Error fetching projects:', error)
     } finally {
       setLoading(false)
     }
@@ -85,7 +86,7 @@ export default function ProjectsPage() {
       setProjects(projects.filter(project => project.id !== id))
       setDeleteId(null)
     } catch (error) {
-      console.error('Error deleting project:', error)
+      logger.error('Error deleting project:', error)
     }
   }
 

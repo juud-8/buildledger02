@@ -5,6 +5,7 @@ import { useSupabase } from '@/lib/hooks/useSupabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
+import logger from '@/lib/logger'
 
 interface Project {
   id: string
@@ -82,7 +83,7 @@ export default function NewInvoicePage() {
         if (error) throw error
         setProjects(data || [])
       } catch (error) {
-        console.error('Error fetching projects:', error)
+        logger.error('Error fetching projects:', error)
       }
     }
 
@@ -140,7 +141,7 @@ export default function NewInvoicePage() {
 
       router.push('/invoices')
     } catch (error) {
-      console.error('Error creating invoice:', error)
+      logger.error('Error creating invoice:', error)
       setError(error instanceof Error ? error.message : 'Failed to create invoice')
     } finally {
       setLoading(false)

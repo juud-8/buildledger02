@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
 import { User, Building, Bell, Shield, Save } from 'lucide-react'
+import logger from '@/lib/logger'
 
 interface UserProfile {
   id: string
@@ -115,7 +116,7 @@ export default function SettingsPage() {
         })
       }
     } catch (error) {
-      console.error('Error fetching profile:', error)
+      logger.error('Error fetching profile:', error)
     } finally {
       setLoading(false)
     }
@@ -148,7 +149,7 @@ export default function SettingsPage() {
         }))
       }
     } catch (error) {
-      console.error('Error fetching settings:', error)
+      logger.error('Error fetching settings:', error)
     }
   }, [supabase, user?.id])
 
@@ -179,7 +180,7 @@ export default function SettingsPage() {
       setSuccess('Profile updated successfully!')
       fetchProfile()
     } catch (error) {
-      console.error('Error updating profile:', error)
+      logger.error('Error updating profile:', error)
       setError(error instanceof Error ? error.message : 'Failed to update profile')
     } finally {
       setSaving(false)
@@ -206,7 +207,7 @@ export default function SettingsPage() {
       setSuccess('Settings updated successfully!')
       fetchSettings()
     } catch (error) {
-      console.error('Error updating settings:', error)
+      logger.error('Error updating settings:', error)
       setError(error instanceof Error ? error.message : 'Failed to update settings')
     } finally {
       setSaving(false)
@@ -239,7 +240,7 @@ export default function SettingsPage() {
       })
       setShowPasswordChange(false)
     } catch (error) {
-      console.error('Error updating password:', error)
+      logger.error('Error updating password:', error)
       setError(error instanceof Error ? error.message : 'Failed to update password')
     } finally {
       setSaving(false)

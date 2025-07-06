@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
 import Link from 'next/link'
 import { Plus, Search, Edit, Trash2, Eye, Send, DollarSign, Calendar, FileText, CheckCircle, AlertCircle, Clock } from 'lucide-react'
+import logger from '@/lib/logger'
 
 interface Invoice {
   id: string
@@ -84,7 +85,7 @@ export default function InvoicesPage() {
       if (error) throw error
       setInvoices(data || [])
     } catch (error) {
-      console.error('Error fetching invoices:', error)
+      logger.error('Error fetching invoices:', error)
     } finally {
       setLoading(false)
     }
@@ -108,7 +109,7 @@ export default function InvoicesPage() {
       setInvoices(invoices.filter(invoice => invoice.id !== id))
       setDeleteId(null)
     } catch (error) {
-      console.error('Error deleting invoice:', error)
+      logger.error('Error deleting invoice:', error)
     }
   }
 
@@ -133,7 +134,7 @@ export default function InvoicesPage() {
       alert('Invoice status updated to "Sent". Email functionality coming soon!')
 
     } catch (error) {
-      console.error('Error sending invoice:', error)
+      logger.error('Error sending invoice:', error)
       alert('Failed to send invoice. Please try again.')
     } finally {
       setSendingInvoiceId(null)
@@ -173,7 +174,7 @@ export default function InvoicesPage() {
       alert('Invoice marked as paid!')
 
     } catch (error) {
-      console.error('Error marking invoice as paid:', error)
+      logger.error('Error marking invoice as paid:', error)
       alert('Failed to mark invoice as paid. Please try again.')
     } finally {
       setMarkingPaidId(null)

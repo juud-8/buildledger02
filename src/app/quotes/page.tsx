@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
 import Link from 'next/link'
 import { Plus, Search, Edit, Trash2, Eye, Send, DollarSign, Calendar, FileText } from 'lucide-react'
+import logger from '@/lib/logger'
 
 interface Quote {
   id: string
@@ -64,7 +65,7 @@ export default function QuotesPage() {
       if (error) throw error
       setQuotes(data || [])
     } catch (error) {
-      console.error('Error fetching quotes:', error)
+      logger.error('Error fetching quotes:', error)
     } finally {
       setLoading(false)
     }
@@ -88,7 +89,7 @@ export default function QuotesPage() {
       setQuotes(quotes.filter(quote => quote.id !== id))
       setDeleteId(null)
     } catch (error) {
-      console.error('Error deleting quote:', error)
+      logger.error('Error deleting quote:', error)
     }
   }
 
@@ -115,7 +116,7 @@ export default function QuotesPage() {
       alert('Quote status updated to "Sent". Email functionality coming soon!')
 
     } catch (error) {
-      console.error('Error sending quote:', error)
+      logger.error('Error sending quote:', error)
       alert('Failed to send quote. Please try again.')
     } finally {
       setSendingQuoteId(null)

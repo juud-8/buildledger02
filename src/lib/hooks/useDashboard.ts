@@ -2,6 +2,7 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { useSupabase } from './useSupabase'
+import logger from '@/lib/logger'
 
 interface DashboardStats {
   totalInvoices: number
@@ -140,7 +141,7 @@ export const useDashboard = () => {
       }))
 
     } catch (error) {
-      console.error('Error fetching dashboard stats:', error)
+      logger.error('Error fetching dashboard stats:', error)
       setData(prev => ({
         ...prev,
         error: error instanceof Error ? error.message : 'Failed to fetch dashboard data'
@@ -256,7 +257,7 @@ export const useDashboard = () => {
       }))
 
     } catch (error) {
-      console.error('Error fetching recent activity:', error)
+      logger.error('Error fetching recent activity:', error)
     }
   }, [supabase, user])
 
@@ -355,7 +356,7 @@ export const useDashboard = () => {
       }))
 
     } catch (error) {
-      console.error('Error fetching upcoming items:', error)
+      logger.error('Error fetching upcoming items:', error)
     }
   }, [supabase, user])
 

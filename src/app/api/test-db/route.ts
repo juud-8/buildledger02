@@ -1,6 +1,7 @@
 // src/app/api/test-db/route.ts
 import { createServerClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import logger from '@/lib/logger'
 
 export async function GET() {
   try {
@@ -26,7 +27,7 @@ export async function GET() {
       .select()
     
     if (tableError) {
-      console.log('Table info error:', tableError)
+      logger.info('Table info error:', tableError)
     }
 
     return NextResponse.json({

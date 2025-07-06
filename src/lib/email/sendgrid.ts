@@ -1,5 +1,6 @@
 // src/lib/email/sendgrid.ts
 import sgMail from '@sendgrid/mail'
+import logger from '@/lib/logger'
 
 // Initialize SendGrid with API key
 if (process.env.SENDGRID_API_KEY) {
@@ -36,10 +37,10 @@ export const sendEmail = async (emailData: EmailData) => {
     }
 
     const response = await sgMail.send(msg)
-    console.log('Email sent successfully:', response[0].statusCode)
+    logger.info('Email sent successfully:', response[0].statusCode)
     return { success: true, messageId: response[0].headers['x-message-id'] }
   } catch (error) {
-    console.error('SendGrid error:', error)
+    logger.error('SendGrid error:', error)
     throw error
   }
 }

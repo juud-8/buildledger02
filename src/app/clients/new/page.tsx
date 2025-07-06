@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSupabase } from '@/lib/hooks/useSupabase'
 import { ArrowLeft } from 'lucide-react'
+import logger from '@/lib/logger'
 import Link from 'next/link'
 
 export default function NewClientPage() {
@@ -49,7 +50,7 @@ export default function NewClientPage() {
 
       router.push('/clients')
     } catch (error) {
-      console.error('Error creating client:', error)
+      logger.error('Error creating client:', error)
     } finally {
       setLoading(false)
     }

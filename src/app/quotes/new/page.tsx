@@ -5,6 +5,7 @@ import { useSupabase } from '@/lib/hooks/useSupabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
+import logger from '@/lib/logger'
 
 interface Project {
   id: string
@@ -79,7 +80,7 @@ export default function NewQuotePage() {
         if (error) throw error
         setProjects(data || [])
       } catch (error) {
-        console.error('Error fetching projects:', error)
+        logger.error('Error fetching projects:', error)
       }
     }
 
@@ -134,7 +135,7 @@ export default function NewQuotePage() {
 
       router.push('/quotes')
     } catch (error) {
-      console.error('Error creating quote:', error)
+      logger.error('Error creating quote:', error)
       setError(error instanceof Error ? error.message : 'Failed to create quote')
     } finally {
       setLoading(false)

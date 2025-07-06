@@ -2,6 +2,7 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
+import logger from '@/lib/logger'
 import Link from 'next/link'
 import { Plus, Search, Edit, Trash2, Phone, Mail, MapPin } from 'lucide-react'
 
@@ -36,7 +37,7 @@ export default function ClientsPage() {
       if (error) throw error
       setClients(data || [])
     } catch (error) {
-      console.error('Error fetching clients:', error)
+      logger.error('Error fetching clients:', error)
     } finally {
       setLoading(false)
     }
@@ -60,7 +61,7 @@ export default function ClientsPage() {
       setClients(clients.filter(client => client.id !== id))
       setDeleteId(null)
     } catch (error) {
-      console.error('Error deleting client:', error)
+      logger.error('Error deleting client:', error)
     }
   }
 

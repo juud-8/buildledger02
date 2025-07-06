@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import logger from '@/lib/logger'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -19,7 +20,7 @@ export default function SignupPage() {
     setError('')
 
     try {
-      console.log('Attempting signup with:', { email, fullName, companyName })
+      logger.debug('Attempting signup with:', { email, fullName, companyName })
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -32,23 +33,23 @@ export default function SignupPage() {
         },
       })
 
-      console.log('Signup response:', { data, error })
+      logger.debug('Signup response:', { data, error })
       
       if (data?.user) {
-        console.log('User created successfully:', data.user.id)
+        logger.info('User created successfully:', data.user.id)
       }
 
       if (error) {
-        console.error('Signup error details:', error)
+        logger.error('Signup error details:', error)
         setError(`Signup failed: ${error.message}`)
         setLoading(false)
       } else {
-        console.log('Signup successful:', data)
+        logger.info('Signup successful:', data)
         setSuccess(true)
         setLoading(false)
       }
     } catch (err) {
-      console.error('Unexpected error during signup:', err)
+      logger.error('Unexpected error during signup:', err)
       setError('An unexpected error occurred during signup')
       setLoading(false)
     }

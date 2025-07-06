@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Mail, Send, X } from 'lucide-react'
+import logger from '@/lib/logger'
 
 interface EmailDialogProps {
   isOpen: boolean
@@ -53,7 +54,7 @@ export default function EmailDialog({
         alert(`Failed to send email: ${error.error}`)
       }
     } catch (error) {
-      console.error('Error sending email:', error)
+      logger.error('Error sending email:', error)
       alert('Failed to send email. Please try again.')
     } finally {
       setSending(false)

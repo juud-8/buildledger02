@@ -5,6 +5,7 @@ import { useSupabase } from '@/lib/hooks/useSupabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import logger from '@/lib/logger'
 
 interface Client {
   id: string
@@ -41,7 +42,7 @@ export default function NewProjectPage() {
         if (error) throw error
         setClients(data || [])
       } catch (error) {
-        console.error('Error fetching clients:', error)
+        logger.error('Error fetching clients:', error)
       }
     }
 
@@ -74,8 +75,8 @@ export default function NewProjectPage() {
 
       router.push('/projects')
     } catch (error) {
-      console.error('Error creating project:', error)
-      console.error('Project data being sent:', projectData)
+      logger.error('Error creating project:', error)
+      logger.error('Project data being sent:', projectData)
       setError(error instanceof Error ? error.message : 'Failed to create project')
     } finally {
       setLoading(false)

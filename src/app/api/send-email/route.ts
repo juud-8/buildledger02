@@ -1,6 +1,7 @@
 // src/app/api/send-email/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { sendEmail, createQuoteEmail, createInvoiceEmail } from '@/lib/email/sendgrid'
+import logger from '@/lib/logger'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
@@ -113,7 +114,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Email API error:', error)
+    logger.error('Email API error:', error)
     return NextResponse.json(
       { error: 'Failed to send email', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
