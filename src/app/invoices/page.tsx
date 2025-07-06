@@ -9,7 +9,6 @@ interface Invoice {
   id: string
   invoice_number: string
   status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
-  payment_status: 'pending' | 'paid' | 'partial' | 'overdue'
   total_amount: number
   amount_paid: number
   due_date: string | null
@@ -34,26 +33,12 @@ const statusColors = {
   cancelled: 'bg-gray-100 text-gray-800'
 }
 
-const paymentStatusColors = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  paid: 'bg-green-100 text-green-800',
-  partial: 'bg-orange-100 text-orange-800',
-  overdue: 'bg-red-100 text-red-800'
-}
-
 const statusIcons = {
   draft: FileText,
   sent: Send,
   paid: CheckCircle,
   overdue: AlertCircle,
   cancelled: Eye
-}
-
-const paymentStatusIcons = {
-  pending: Clock,
-  paid: CheckCircle,
-  partial: DollarSign,
-  overdue: AlertCircle
 }
 
 export default function InvoicesPage() {
@@ -151,7 +136,6 @@ export default function InvoicesPage() {
         .from('invoices')
         .update({ 
           status: 'paid',
-          payment_status: 'paid',
           amount_paid: invoice.total_amount
         })
         .eq('id', invoiceId)
@@ -164,7 +148,6 @@ export default function InvoicesPage() {
           ? { 
               ...inv, 
               status: 'paid' as const,
-              payment_status: 'paid' as const,
               amount_paid: inv.total_amount
             }
           : inv
@@ -188,17 +171,17 @@ export default function InvoicesPage() {
   )
 
   const totalOutstanding = invoices
-    .filter(invoice => invoice.payment_status !== 'paid')
+    .filter(invoice => invoice.amount_paid < invoice.total_amount)
     .reduce((sum, invoice) => sum + (invoice.total_amount - invoice.amount_paid), 0)
 
   const totalPaid = invoices
-    .filter(invoice => invoice.payment_status === 'paid')
+    .filter(invoice => invoice.amount_paid === invoice.total_amount)
     .reduce((sum, invoice) => sum + invoice.total_amount, 0)
 
   const overdueCount = invoices.filter(invoice => 
     invoice.due_date && 
     new Date(invoice.due_date) < new Date() && 
-    invoice.payment_status !== 'paid'
+    invoice.amount_paid < invoice.total_amount
   ).length
 
   if (loading) {
@@ -324,8 +307,7 @@ export default function InvoicesPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {filteredInvoices.map((invoice) => {
             const StatusIcon = statusIcons[invoice.status]
-            const PaymentIcon = paymentStatusIcons[invoice.payment_status]
-            const isOverdue = invoice.due_date && new Date(invoice.due_date) < new Date() && invoice.payment_status !== 'paid'
+            const isOverdue = invoice.due_date && new Date(invoice.due_date) < new Date() && invoice.amount_paid < invoice.total_amount
             const remainingAmount = invoice.total_amount - invoice.amount_paid
             
             return (
@@ -372,10 +354,26 @@ export default function InvoicesPage() {
                         <StatusIcon className="w-3 h-3 mr-1" />
                         {invoice.status.toUpperCase()}
                       </span>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${paymentStatusColors[invoice.payment_status]}`}>
-                        <PaymentIcon className="w-3 h-3 mr-1" />
-                        {invoice.payment_status.toUpperCase()}
-                      </span>
+                      {invoice.amount_paid < invoice.total_amount && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          PENDING
+                        </span>
+                      )}
+                      {invoice.amount_paid === invoice.total_amount && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          PAID
+                        </span>
+                      )}
+                      {invoice.amount_paid > 0 && invoice.amount_paid < invoice.total_amount && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                          PARTIAL
+                        </span>
+                      )}
+                      {invoice.amount_paid === 0 && invoice.total_amount > 0 && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          OVERDUE
+                        </span>
+                      )}
                     </div>
                     {isOverdue && (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
@@ -447,7 +445,7 @@ export default function InvoicesPage() {
                           {sendingInvoiceId === invoice.id ? 'Sending...' : 'Send Invoice'}
                         </button>
                       )}
-                      {invoice.payment_status !== 'paid' && (
+                      {invoice.amount_paid < invoice.total_amount && (
                         <button 
                           onClick={() => handleMarkAsPaid(invoice.id)}
                           disabled={markingPaidId === invoice.id}

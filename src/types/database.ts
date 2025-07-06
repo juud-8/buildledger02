@@ -15,6 +15,20 @@ export interface Database {
             zip_code: string | null
             trade_type: string | null
             license_number: string | null
+            // Settings fields
+            notifications_email: boolean | null
+            notifications_sms: boolean | null
+            default_payment_terms: number | null
+            default_currency: string | null
+            invoice_prefix: string | null
+            quote_prefix: string | null
+            auto_send_reminders: boolean | null
+            reminder_days: number | null
+            theme: 'light' | 'dark' | 'system' | null
+            timezone: string | null
+            website: string | null
+            tax_id: string | null
+            country: string | null
             created_at: string
             updated_at: string
           }
@@ -30,6 +44,19 @@ export interface Database {
             zip_code?: string | null
             trade_type?: string | null
             license_number?: string | null
+            notifications_email?: boolean | null
+            notifications_sms?: boolean | null
+            default_payment_terms?: number | null
+            default_currency?: string | null
+            invoice_prefix?: string | null
+            quote_prefix?: string | null
+            auto_send_reminders?: boolean | null
+            reminder_days?: number | null
+            theme?: 'light' | 'dark' | 'system' | null
+            timezone?: string | null
+            website?: string | null
+            tax_id?: string | null
+            country?: string | null
             created_at?: string
             updated_at?: string
           }
@@ -45,6 +72,19 @@ export interface Database {
             zip_code?: string | null
             trade_type?: string | null
             license_number?: string | null
+            notifications_email?: boolean | null
+            notifications_sms?: boolean | null
+            default_payment_terms?: number | null
+            default_currency?: string | null
+            invoice_prefix?: string | null
+            quote_prefix?: string | null
+            auto_send_reminders?: boolean | null
+            reminder_days?: number | null
+            theme?: 'light' | 'dark' | 'system' | null
+            timezone?: string | null
+            website?: string | null
+            tax_id?: string | null
+            country?: string | null
             created_at?: string
             updated_at?: string
           }
@@ -149,7 +189,10 @@ export interface Database {
         line_items: {
           Row: {
             id: string
+            // Foreign key relationships - can belong to either quotes or invoices via project
             project_id: string
+            quote_id: string | null
+            invoice_id: string | null
             item_type: 'service' | 'material' | 'labor'
             description: string
             quantity: number
@@ -161,6 +204,8 @@ export interface Database {
           Insert: {
             id?: string
             project_id: string
+            quote_id?: string | null
+            invoice_id?: string | null
             item_type?: 'service' | 'material' | 'labor'
             description: string
             quantity?: number
@@ -171,6 +216,8 @@ export interface Database {
           Update: {
             id?: string
             project_id?: string
+            quote_id?: string | null
+            invoice_id?: string | null
             item_type?: 'service' | 'material' | 'labor'
             description?: string
             quantity?: number
@@ -240,6 +287,7 @@ export interface Database {
             amount_paid: number
             balance_due: number
             due_date: string | null
+            issued_date: string | null
             notes: string | null
             terms: string | null
             created_at: string
@@ -256,6 +304,7 @@ export interface Database {
             tax_rate?: number
             amount_paid?: number
             due_date?: string | null
+            issued_date?: string | null
             notes?: string | null
             terms?: string | null
             created_at?: string
@@ -272,6 +321,7 @@ export interface Database {
             tax_rate?: number
             amount_paid?: number
             due_date?: string | null
+            issued_date?: string | null
             notes?: string | null
             terms?: string | null
             created_at?: string

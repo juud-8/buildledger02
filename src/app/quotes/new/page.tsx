@@ -34,7 +34,7 @@ export default function NewQuotePage() {
   const [formData, setFormData] = useState({
     project_id: '',
     quote_number: '',
-    status: 'draft' as 'draft' | 'sent' | 'accepted' | 'rejected',
+    status: 'draft' as 'draft' | 'sent' | 'approved' | 'rejected' | 'expired',
     valid_until: '',
     notes: ''
   })
@@ -103,6 +103,7 @@ export default function NewQuotePage() {
           quote_number: formData.quote_number,
           project_id: formData.project_id,
           status: formData.status,
+          subtotal: totalAmount, // Use subtotal for consistency
           total_amount: totalAmount,
           valid_until: formData.valid_until || null,
           notes: formData.notes || null,
@@ -121,7 +122,7 @@ export default function NewQuotePage() {
           description: item.description,
           quantity: item.quantity,
           unit_price: item.unit_price,
-          total_amount: item.total
+          // total_price will be calculated by database
         }))
 
       if (lineItemsData.length > 0) {
@@ -268,8 +269,9 @@ export default function NewQuotePage() {
               >
                 <option value="draft">Draft</option>
                 <option value="sent">Sent</option>
-                <option value="accepted">Accepted</option>
+                <option value="approved">Approved</option>
                 <option value="rejected">Rejected</option>
+                <option value="expired">Expired</option>
               </select>
             </div>
 

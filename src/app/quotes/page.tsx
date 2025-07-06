@@ -8,7 +8,7 @@ import { Plus, Search, Edit, Trash2, Eye, Send, DollarSign, Calendar, FileText }
 interface Quote {
   id: string
   quote_number: string
-  status: 'draft' | 'sent' | 'accepted' | 'rejected'
+  status: 'draft' | 'sent' | 'approved' | 'rejected'
   total_amount: number
   valid_until: string | null
   notes: string | null
@@ -26,14 +26,14 @@ interface Quote {
 const statusColors = {
   draft: 'bg-gray-100 text-gray-800',
   sent: 'bg-blue-100 text-blue-800',
-  accepted: 'bg-green-100 text-green-800',
+  approved: 'bg-green-100 text-green-800',
   rejected: 'bg-red-100 text-red-800'
 }
 
 const statusIcons = {
   draft: FileText,
   sent: Send,
-  accepted: DollarSign,
+  approved: DollarSign,
   rejected: Eye
 }
 

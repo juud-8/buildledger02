@@ -35,7 +35,6 @@ export default function NewInvoicePage() {
     project_id: '',
     invoice_number: '',
     status: 'draft' as 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled',
-    payment_status: 'pending' as 'pending' | 'paid' | 'partial' | 'overdue',
     issued_date: new Date().toISOString().split('T')[0],
     due_date: '',
     amount_paid: 0,
@@ -106,7 +105,7 @@ export default function NewInvoicePage() {
           invoice_number: formData.invoice_number,
           project_id: formData.project_id,
           status: formData.status,
-          payment_status: formData.payment_status,
+          subtotal: totalAmount, // Use subtotal instead of total_amount for consistency
           total_amount: totalAmount,
           amount_paid: formData.amount_paid,
           issued_date: formData.issued_date,
@@ -127,7 +126,7 @@ export default function NewInvoicePage() {
           description: item.description,
           quantity: item.quantity,
           unit_price: item.unit_price,
-          total_amount: item.total
+          // Use total_price to match database schema
         }))
 
       if (lineItemsData.length > 0) {
@@ -277,25 +276,6 @@ export default function NewInvoicePage() {
                 <option value="paid">Paid</option>
                 <option value="overdue">Overdue</option>
                 <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-
-            {/* Payment Status */}
-            <div>
-              <label htmlFor="payment_status" className="block text-sm font-medium text-gray-700">
-                Payment Status
-              </label>
-              <select
-                name="payment_status"
-                id="payment_status"
-                value={formData.payment_status}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <option value="pending">Pending</option>
-                <option value="paid">Paid</option>
-                <option value="partial">Partial</option>
-                <option value="overdue">Overdue</option>
               </select>
             </div>
 
