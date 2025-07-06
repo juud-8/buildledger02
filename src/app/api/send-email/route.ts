@@ -3,18 +3,32 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sendEmail, createQuoteEmail, createInvoiceEmail } from '@/lib/email/sendgrid'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { z } from 'zod'
+
+const emailSchema = z.object({
+  type: z.enum(['quote', 'invoice']),
+  recipientEmail: z.string().email(),
+  documentId: z.string().uuid(),
+  fromEmail: z.string().email(),
+  message: z.string().optional()
+})
 
 export async function POST(request: NextRequest) {
   try {
+    const body = await request.json()
+    const parsed = emailSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten() }, { status: 400 })
+    }
+
+    const { type, recipientEmail, documentId, message, fromEmail } = parsed.data
+
     const supabase = createServerComponentClient({ cookies })
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const body = await request.json()
-    const { type, recipientEmail, documentId, message, fromEmail } = body
 
     // Get user profile for company info
     const { data: profile } = await supabase
