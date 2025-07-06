@@ -66,7 +66,7 @@ export const useDashboard = () => {
       // Fetch invoice statistics
       const { data: invoices, error: invoicesError } = await supabase
         .from('invoices')
-        .select('total_amount, amount_paid, status, payment_status, due_date, created_at, issued_date')
+        .select('total_amount, amount_paid, status, due_date, created_at')
         .eq('user_id', user.id)
 
       if (invoicesError) throw invoicesError
@@ -100,23 +100,30 @@ export const useDashboard = () => {
       const today = new Date()
       const totalInvoices = invoices?.length || 0
       const totalRevenue = invoices?.reduce((sum, inv) => sum + (inv.amount_paid || 0), 0) || 0
+      
+      // Calculate outstanding amount (total - paid for unpaid invoices)
       const outstandingAmount = invoices?.reduce((sum, inv) => {
-        if (inv.payment_status && inv.payment_status !== 'paid') {
+        if (inv.status !== 'paid') {
           return sum + (inv.total_amount - (inv.amount_paid || 0))
         }
         return sum
       }, 0) || 0
 
+      // Count overdue invoices (due date passed and not fully paid)
       const overdueInvoices = invoices?.filter(inv => {
         const dueDate = inv.due_date ? new Date(inv.due_date) : null
-        return dueDate && 
-               dueDate < today && 
-               inv.payment_status && 
-               inv.payment_status !== 'paid'
+        const isPaid = inv.status === 'paid' || (inv.amount_paid >= inv.total_amount)
+        return dueDate && dueDate < today && !isPaid
       }).length || 0
 
-      const paidInvoices = invoices?.filter(inv => inv.payment_status === 'paid').length || 0
-      const pendingQuotes = quotes?.filter(quote => quote.status === 'draft' || quote.status === 'sent').length || 0
+      // Count paid invoices
+      const paidInvoices = invoices?.filter(inv => 
+        inv.status === 'paid' || (inv.amount_paid >= inv.total_amount)
+      ).length || 0
+
+      const pendingQuotes = quotes?.filter(quote => 
+        quote.status === 'draft' || quote.status === 'sent'
+      ).length || 0
 
       setData(prev => ({
         ...prev,
@@ -267,7 +274,9 @@ export const useDashboard = () => {
           id,
           invoice_number,
           due_date,
-          payment_status,
+          status,
+          total_amount,
+          amount_paid,
           projects!inner (
             name,
             clients!inner (
@@ -277,7 +286,7 @@ export const useDashboard = () => {
           )
         `)
         .eq('user_id', user.id)
-        .neq('payment_status', 'paid')
+        .neq('status', 'paid')
         .not('due_date', 'is', null)
         .order('due_date', { ascending: true })
         .limit(5)
@@ -286,17 +295,20 @@ export const useDashboard = () => {
 
       upcomingInvoices?.forEach(invoice => {
         const dueDate = new Date(invoice.due_date)
+        const isPaid = invoice.amount_paid >= invoice.total_amount
         const clientName = invoice.projects?.clients?.[0]?.company_name || 
                           invoice.projects?.clients?.[0]?.name || 'Unknown Client'
         
-        upcoming.push({
-          id: `invoice-due-${invoice.id}`,
-          title: `Invoice ${invoice.invoice_number} Due`,
-          description: `${clientName} - ${invoice.projects?.name || 'Unknown Project'}`,
-          dueDate: invoice.due_date,
-          type: 'invoice_due',
-          isOverdue: dueDate < today
-        })
+        if (!isPaid) {
+          upcoming.push({
+            id: `invoice-due-${invoice.id}`,
+            title: `Invoice ${invoice.invoice_number} Due`,
+            description: `${clientName} - ${invoice.projects?.name || 'Unknown Project'}`,
+            dueDate: invoice.due_date,
+            type: 'invoice_due',
+            isOverdue: dueDate < today
+          })
+        }
       })
 
       // Upcoming project deadlines
