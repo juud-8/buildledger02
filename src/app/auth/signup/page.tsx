@@ -12,6 +12,7 @@ export default function SignupPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const supabase = createClient()
+  const isDev = process.env.NODE_ENV !== 'production'
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -19,7 +20,9 @@ export default function SignupPage() {
     setError('')
 
     try {
-      console.log('Attempting signup with:', { email, fullName, companyName })
+      if (isDev) {
+        console.log('Attempting signup with:', { email, fullName, companyName })
+      }
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -32,10 +35,14 @@ export default function SignupPage() {
         },
       })
 
-      console.log('Signup response:', { data, error })
+      if (isDev) {
+        console.log('Signup response:', { data, error })
+      }
       
       if (data?.user) {
-        console.log('User created successfully:', data.user.id)
+        if (isDev) {
+          console.log('User created successfully:', data.user.id)
+        }
       }
 
       if (error) {
@@ -43,7 +50,9 @@ export default function SignupPage() {
         setError(`Signup failed: ${error.message}`)
         setLoading(false)
       } else {
-        console.log('Signup successful:', data)
+        if (isDev) {
+          console.log('Signup successful:', data)
+        }
         setSuccess(true)
         setLoading(false)
       }
