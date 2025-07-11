@@ -19,6 +19,7 @@ interface Quote {
     clients: {
       name: string
       company_name: string | null
+      email: string | null
     }
   }
 }
@@ -55,7 +56,8 @@ export default function QuotesPage() {
             name,
             clients (
               name,
-              company_name
+              company_name,
+              email
             )
           )
         `)
@@ -92,7 +94,12 @@ export default function QuotesPage() {
     }
   }
 
-  const handleSendQuote = async (quoteId: string) => {
+  const handleSendQuote = async (quoteId: string, recipientEmail: string | null) => {
+    if (!recipientEmail) {
+      alert('No recipient email found for this quote.')
+      return
+    }
+
     setSendingQuoteId(quoteId)
     try {
       // Update quote status to 'sent'
@@ -104,15 +111,32 @@ export default function QuotesPage() {
       if (error) throw error
 
       // Update local state
-      setQuotes(quotes.map(quote => 
-        quote.id === quoteId 
-          ? { ...quote, status: 'sent' as const }
-          : quote
-      ))
+      setQuotes(
+        quotes.map((quote) =>
+          quote.id === quoteId ? { ...quote, status: 'sent' as const } : quote
+        )
+      )
 
-      // TODO: Implement actual email sending
-      // This would require getting client email and using the email API
-      alert('Quote status updated to "Sent". Email functionality coming soon!')
+      // Send email with quote PDF
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          type: 'quote',
+          recipientEmail,
+          documentId: quoteId,
+          fromEmail: user?.email || undefined
+        })
+      })
+
+      if (response.ok) {
+        alert('Quote emailed successfully!')
+      } else {
+        const err = await response.json()
+        throw new Error(err.error || 'Failed to send email')
+      }
 
     } catch (error) {
       console.error('Error sending quote:', error)
@@ -272,7 +296,7 @@ export default function QuotesPage() {
                     <div className="flex space-x-2">
                       {quote.status === 'draft' && (
                         <button 
-                          onClick={() => handleSendQuote(quote.id)}
+                          onClick={() => handleSendQuote(quote.id, quote.projects.clients.email)}
                           disabled={sendingQuoteId === quote.id}
                           className="text-sm font-medium text-blue-600 hover:text-blue-500 disabled:opacity-50"
                         >
