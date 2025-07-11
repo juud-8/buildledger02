@@ -10,6 +10,7 @@ Professional invoicing and quoting software designed specifically for tradespeop
 - **Quote Generation** - Create professional estimates with line items
 - **Invoice Creation** - Convert quotes to invoices seamlessly
 - **PDF Export** - Generate professional PDF documents
+- **Email Delivery** - Send quotes and invoices with PDF attachments
 - **Payment Tracking** - Monitor payments and outstanding balances
 - **Real-time Updates** - Dashboard automatically updates when data changes
 - **Business Intelligence** - Comprehensive metrics and insights
