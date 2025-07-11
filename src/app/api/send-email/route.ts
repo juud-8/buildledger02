@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
       const clientName = (quote.projects as { clients?: { name?: string } })?.clients?.name || 'Client'
       emailContent = createQuoteEmail(clientName, quote.quote_number, companyName, message)
 
-      // TODO: Generate PDF attachment
-      // pdfAttachment = await generateQuotePDF(documentId)
+      // Generate PDF attachment
+      pdfAttachment = await generateQuotePDF(documentId)
 
     } else if (type === 'invoice') {
       // Get invoice details
@@ -88,8 +88,8 @@ export async function POST(request: NextRequest) {
         message
       )
 
-      // TODO: Generate PDF attachment
-      // pdfAttachment = await generateInvoicePDF(documentId)
+      // Generate PDF attachment
+      pdfAttachment = await generateInvoicePDF(documentId)
     } else {
       return NextResponse.json({ error: 'Invalid email type' }, { status: 400 })
     }
@@ -118,5 +118,92 @@ export async function POST(request: NextRequest) {
       { error: 'Failed to send email', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
+  }
+}
+
+// Generate a simple Quote PDF using jsPDF
+const generateQuotePDF = async (quoteId: string) => {
+  const supabase = createServerComponentClient({ cookies })
+  const { data: quote } = await supabase
+    .from('quotes')
+    .select(
+      `quote_number, total_amount, projects!inner (name, clients!inner (name))`
+    )
+    .eq('id', quoteId)
+    .single()
+
+  if (!quote) {
+    throw new Error('Quote not found')
+  }
+
+  const { jsPDF } = await import('jspdf')
+  const doc = new jsPDF()
+  doc.setFontSize(16)
+  doc.text(`Quote ${quote.quote_number}`, 10, 20)
+
+  const projectName = (quote.projects as { name?: string })?.name || ''
+  const clientName = (quote.projects as { clients?: { name?: string } })?.clients?.name || ''
+
+  doc.setFontSize(12)
+  if (projectName) doc.text(`Project: ${projectName}`, 10, 30)
+  if (clientName) doc.text(`Client: ${clientName}`, 10, 40)
+  if (typeof quote.total_amount === 'number') {
+    doc.text(`Total: $${quote.total_amount.toFixed(2)}`, 10, 50)
+  }
+
+  const pdfString = doc.output('datauristring')
+  const base64 = pdfString.split(',')[1]
+
+  return {
+    content: base64,
+    filename: `quote-${quote.quote_number}.pdf`,
+    type: 'application/pdf',
+    disposition: 'attachment'
+  }
+}
+
+// Generate a simple Invoice PDF using jsPDF
+const generateInvoicePDF = async (invoiceId: string) => {
+  const supabase = createServerComponentClient({ cookies })
+  const { data: invoice } = await supabase
+    .from('invoices')
+    .select(
+      `invoice_number, total_amount, due_date, projects!inner (name, clients!inner (name))`
+    )
+    .eq('id', invoiceId)
+    .single()
+
+  if (!invoice) {
+    throw new Error('Invoice not found')
+  }
+
+  const { jsPDF } = await import('jspdf')
+  const doc = new jsPDF()
+  doc.setFontSize(16)
+  doc.text(`Invoice ${invoice.invoice_number}`, 10, 20)
+
+  const projectName = (invoice.projects as { name?: string })?.name || ''
+  const clientName = (invoice.projects as { clients?: { name?: string } })?.clients?.name || ''
+
+  doc.setFontSize(12)
+  if (projectName) doc.text(`Project: ${projectName}`, 10, 30)
+  if (clientName) doc.text(`Client: ${clientName}`, 10, 40)
+
+  if (invoice.due_date) {
+    const dueDate = new Date(invoice.due_date).toLocaleDateString()
+    doc.text(`Due: ${dueDate}`, 10, 50)
+  }
+  if (typeof invoice.total_amount === 'number') {
+    doc.text(`Total: $${invoice.total_amount.toFixed(2)}`, 10, 60)
+  }
+
+  const pdfString = doc.output('datauristring')
+  const base64 = pdfString.split(',')[1]
+
+  return {
+    content: base64,
+    filename: `invoice-${invoice.invoice_number}.pdf`,
+    type: 'application/pdf',
+    disposition: 'attachment'
   }
 }
