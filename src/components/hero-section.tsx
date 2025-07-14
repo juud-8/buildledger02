@@ -23,6 +23,14 @@ export default function HeroSection() {
             >
               Start Your Free Trial
             </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="dark:border-gray-600 dark:hover:bg-gray-800 bg-transparent"
+              onClick={() => window.location.href = '/auth/login'}
+            >
+              Log In
+            </Button>
             <Button 
               size="lg" 
               variant="outline" 

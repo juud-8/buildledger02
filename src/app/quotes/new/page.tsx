@@ -34,7 +34,7 @@ export default function NewQuotePage() {
   const [formData, setFormData] = useState({
     project_id: '',
     quote_number: '',
-    status: 'draft' as 'draft' | 'sent' | 'accepted' | 'rejected',
+    status: 'draft' as 'draft' | 'sent' | 'approved' | 'rejected',
     valid_until: '',
     notes: ''
   })
@@ -103,7 +103,8 @@ export default function NewQuotePage() {
           quote_number: formData.quote_number,
           project_id: formData.project_id,
           status: formData.status,
-          total_amount: totalAmount,
+          subtotal: totalAmount,
+          tax_rate: 0,
           valid_until: formData.valid_until || null,
           notes: formData.notes || null,
           user_id: user?.id
@@ -117,11 +118,11 @@ export default function NewQuotePage() {
       const lineItemsData = lineItems
         .filter(item => item.description.trim() !== '')
         .map(item => ({
-          quote_id: quote.id,
+          project_id: formData.project_id,
+          item_type: 'service',
           description: item.description,
           quantity: item.quantity,
-          unit_price: item.unit_price,
-          total_amount: item.total
+          unit_price: item.unit_price
         }))
 
       if (lineItemsData.length > 0) {
@@ -134,7 +135,7 @@ export default function NewQuotePage() {
 
       router.push('/quotes')
     } catch (error) {
-      console.error('Error creating quote:', error)
+      console.error('Error creating quote:', JSON.stringify(error, null, 2));
       setError(error instanceof Error ? error.message : 'Failed to create quote')
     } finally {
       setLoading(false)
@@ -268,7 +269,7 @@ export default function NewQuotePage() {
               >
                 <option value="draft">Draft</option>
                 <option value="sent">Sent</option>
-                <option value="accepted">Accepted</option>
+                <option value="approved">Approved</option>
                 <option value="rejected">Rejected</option>
               </select>
             </div>

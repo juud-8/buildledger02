@@ -35,8 +35,6 @@ export default function NewInvoicePage() {
     project_id: '',
     invoice_number: '',
     status: 'draft' as 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled',
-    payment_status: 'pending' as 'pending' | 'paid' | 'partial' | 'overdue',
-    issued_date: new Date().toISOString().split('T')[0],
     due_date: '',
     amount_paid: 0,
     notes: ''
@@ -106,10 +104,9 @@ export default function NewInvoicePage() {
           invoice_number: formData.invoice_number,
           project_id: formData.project_id,
           status: formData.status,
-          payment_status: formData.payment_status,
-          total_amount: totalAmount,
+          subtotal: totalAmount,
+          tax_rate: 0,
           amount_paid: formData.amount_paid,
-          issued_date: formData.issued_date,
           due_date: formData.due_date || null,
           notes: formData.notes || null,
           user_id: user?.id
@@ -123,11 +120,11 @@ export default function NewInvoicePage() {
       const lineItemsData = lineItems
         .filter(item => item.description.trim() !== '')
         .map(item => ({
-          invoice_id: invoice.id,
+          project_id: formData.project_id,
+          item_type: 'service',
           description: item.description,
           quantity: item.quantity,
-          unit_price: item.unit_price,
-          total_amount: item.total
+          unit_price: item.unit_price
         }))
 
       if (lineItemsData.length > 0) {
@@ -140,7 +137,7 @@ export default function NewInvoicePage() {
 
       router.push('/invoices')
     } catch (error) {
-      console.error('Error creating invoice:', error)
+      console.error('Error creating invoice:', JSON.stringify(error, null, 2));
       setError(error instanceof Error ? error.message : 'Failed to create invoice')
     } finally {
       setLoading(false)
@@ -278,41 +275,6 @@ export default function NewInvoicePage() {
                 <option value="overdue">Overdue</option>
                 <option value="cancelled">Cancelled</option>
               </select>
-            </div>
-
-            {/* Payment Status */}
-            <div>
-              <label htmlFor="payment_status" className="block text-sm font-medium text-gray-700">
-                Payment Status
-              </label>
-              <select
-                name="payment_status"
-                id="payment_status"
-                value={formData.payment_status}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <option value="pending">Pending</option>
-                <option value="paid">Paid</option>
-                <option value="partial">Partial</option>
-                <option value="overdue">Overdue</option>
-              </select>
-            </div>
-
-            {/* Issued Date */}
-            <div>
-              <label htmlFor="issued_date" className="block text-sm font-medium text-gray-700">
-                Issued Date *
-              </label>
-              <input
-                type="date"
-                name="issued_date"
-                id="issued_date"
-                required
-                value={formData.issued_date}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
             </div>
 
             {/* Due Date */}
