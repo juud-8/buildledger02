@@ -39,7 +39,7 @@ export default function NewPaymentPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<z.infer<typeof formSchema>>({
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { amount: 0, payment_date: new Date().toISOString().split('T')[0] }
   })
@@ -74,7 +74,7 @@ export default function NewPaymentPage() {
     setError('')
     try {
       // Insert payment
-      const { data: paymentData, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from('payments')
         .insert([{
           user_id: user.id,

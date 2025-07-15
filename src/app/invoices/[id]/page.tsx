@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Edit, Send, DollarSign, Calendar, FileText, CheckCircle, AlertCircle, Clock, Download, Printer } from 'lucide-react'
+import { ArrowLeft, Edit, Send, DollarSign, FileText, CheckCircle, AlertCircle, Clock, Download, Printer } from 'lucide-react'
 import EmailDialog from '@/components/email/EmailDialog'
 import InvoiceHeader from '@/components/invoices/InvoiceHeader'
 import LineItemsTable from '@/components/invoices/LineItemsTable'
@@ -59,26 +59,9 @@ interface Payment {
   created_at: string
 }
 
-const statusColors = {
-  draft: 'bg-gray-100 text-gray-800',
-  sent: 'bg-blue-100 text-blue-800',
-  paid: 'bg-green-100 text-green-800',
-  overdue: 'bg-red-100 text-red-800',
-  cancelled: 'bg-gray-100 text-gray-800'
-}
-
-const statusIcons = {
-  draft: FileText,
-  sent: Send,
-  paid: CheckCircle,
-  overdue: AlertCircle,
-  cancelled: Clock
-}
-
 export default function InvoiceViewPage() {
   const { user, supabase } = useSupabase()
   const params = useParams()
-  const router = useRouter()
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [lineItems, setLineItems] = useState<LineItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -302,7 +285,6 @@ export default function InvoiceViewPage() {
     )
   }
 
-  const StatusIcon = statusIcons[invoice.status]
   const isOverdue = invoice.due_date && new Date(invoice.due_date) < new Date() && invoice.status !== 'paid'
   const client = invoice.projects.clients[0]
 

@@ -19,14 +19,6 @@ interface Project {
   }[]
 }
 
-interface LineItem {
-  id: string
-  description: string
-  quantity: number
-  unit_price: number
-  total: number
-}
-
 const invoiceSchema = z.object({
   project_id: z.string().nonempty('Project is required'),
   invoice_number: z.string().nonempty('Invoice number is required'),
