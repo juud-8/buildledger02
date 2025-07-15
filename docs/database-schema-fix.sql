@@ -25,3 +25,7 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION handle_new_user(); 
+
+-- Add logo fields to profiles table
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS logo_url TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS logo_display TEXT DEFAULT 'top-right'; 

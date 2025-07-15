@@ -78,9 +78,27 @@ const generateInvoicePDF = async (invoiceId: string, supabase: SupabaseClient) =
   // Get user profile for company info
   const { data: profile } = await supabase
     .from('profiles')
-    .select('company_name, full_name, email, phone')
+    .select('company_name, full_name, email, phone, logo_url, logo_display')
     .eq('id', invoice.user_id)
     .single()
+
+  const logoUrl = profile?.logo_url
+  const logoDisplay = profile?.logo_display || 'top-right'
+  if (logoUrl) {
+    const img = await fetch(logoUrl).then(r => r.blob()).then(blob => new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.readAsDataURL(blob)
+    }))
+    if (logoDisplay === 'background') {
+      doc.addImage(img as string, 'PNG', 30, 80, 150, 150, undefined, 'FAST')
+      doc.setDrawColor(255,255,255)
+    } else if (logoDisplay === 'top-left') {
+      doc.addImage(img as string, 'PNG', 20, 10, 40, 40, undefined, 'FAST')
+    } else {
+      doc.addImage(img as string, 'PNG', 150, 10, 40, 40, undefined, 'FAST')
+    }
+  }
 
   const jsPDF = (await import('jspdf')).default
   const doc = new jsPDF()
@@ -339,9 +357,27 @@ const generateQuotePDF = async (quoteId: string, supabase: SupabaseClient) => {
   // Get user profile for company info
   const { data: profile } = await supabase
     .from('profiles')
-    .select('company_name, full_name, email, phone')
+    .select('company_name, full_name, email, phone, logo_url, logo_display')
     .eq('id', quote.user_id)
     .single()
+
+  const logoUrl = profile?.logo_url
+  const logoDisplay = profile?.logo_display || 'top-right'
+  if (logoUrl) {
+    const img = await fetch(logoUrl).then(r => r.blob()).then(blob => new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.readAsDataURL(blob)
+    }))
+    if (logoDisplay === 'background') {
+      doc.addImage(img as string, 'PNG', 30, 80, 150, 150, undefined, 'FAST')
+      doc.setDrawColor(255,255,255)
+    } else if (logoDisplay === 'top-left') {
+      doc.addImage(img as string, 'PNG', 20, 10, 40, 40, undefined, 'FAST')
+    } else {
+      doc.addImage(img as string, 'PNG', 150, 10, 40, 40, undefined, 'FAST')
+    }
+  }
 
   const jsPDF = (await import('jspdf')).default
   const doc = new jsPDF()

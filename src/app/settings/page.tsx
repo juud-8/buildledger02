@@ -29,6 +29,8 @@ interface UserProfile {
   theme: 'light' | 'dark' | 'system' | null
   timezone: string | null
   created_at: string
+  logo_url: string | null
+  logo_display: 'top-right' | 'top-left' | 'background' | null
 }
 
 interface Settings {
@@ -65,7 +67,8 @@ export default function SettingsPage() {
     zip_code: '',
     country: '',
     website: '',
-    tax_id: ''
+    tax_id: '',
+    logo_display: 'top-right' as 'top-right' | 'top-left' | 'background'
   })
 
   // Settings state
@@ -89,6 +92,11 @@ export default function SettingsPage() {
     confirm_password: ''
   })
 
+  // 1. Add logoUrl and logoDisplay to profileData state
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [logoUploading, setLogoUploading] = useState(false)
+
   const fetchProfile = useCallback(async () => {
     try {
       const { data, error } = await supabase
@@ -111,8 +119,10 @@ export default function SettingsPage() {
           zip_code: data.zip_code || '',
           country: data.country || '',
           website: data.website || '',
-          tax_id: data.tax_id || ''
+          tax_id: data.tax_id || '',
+          logo_display: data.logo_display || 'top-right'
         })
+        if (data.logo_url) setLogoPreview(data.logo_url)
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
@@ -165,6 +175,12 @@ export default function SettingsPage() {
     setError('')
     setSuccess('')
 
+    let logoUrl = profile?.logo_url || null
+    if (logoFile) {
+      const uploadedUrl = await handleLogoUpload()
+      if (uploadedUrl) logoUrl = uploadedUrl
+    }
+
     try {
       const { error } = await supabase
         .from('profiles')
@@ -172,6 +188,8 @@ export default function SettingsPage() {
           id: user?.id,
           email: user?.email,
           ...profileData,
+          logo_url: logoUrl,
+          logo_display: profileData.logo_display || 'top-right',
           updated_at: new Date().toISOString()
         })
 
@@ -248,6 +266,10 @@ export default function SettingsPage() {
 
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
+    if (name === 'logo_display') {
+      setProfileData(prev => ({ ...prev, logo_display: value as 'top-right' | 'top-left' | 'background' }))
+      return
+    }
     setProfileData(prev => ({ ...prev, [name]: value }))
   }
 
@@ -258,6 +280,33 @@ export default function SettingsPage() {
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : 
                type === 'number' ? parseInt(value) : value
     }))
+  }
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setLogoFile(file)
+      setLogoPreview(URL.createObjectURL(file))
+    }
+  }
+
+  const handleLogoUpload = async () => {
+    if (!logoFile) return null
+    setLogoUploading(true)
+    try {
+      const fileExt = logoFile.name.split('.').pop()
+      const filePath = `logos/${user.id}.${fileExt}`
+      const { data, error } = await supabase.storage.from('public').upload(filePath, logoFile, { upsert: true })
+      if (error) throw error
+      const { data: { publicUrl } } = supabase.storage.from('public').getPublicUrl(filePath)
+      setLogoPreview(publicUrl)
+      return publicUrl
+    } catch (err) {
+      setError('Logo upload failed')
+      return null
+    } finally {
+      setLogoUploading(false)
+    }
   }
 
   const tabs = [
@@ -513,6 +562,23 @@ export default function SettingsPage() {
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
                 </div>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700">Business Logo</label>
+                {logoPreview && (
+                  <img src={logoPreview} alt="Logo Preview" className="h-20 mb-2 rounded border" />
+                )}
+                <input type="file" accept="image/*" onChange={handleLogoChange} className="block" />
+                {logoUploading && <div className="text-xs text-gray-500">Uploading...</div>}
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700">Logo Placement</label>
+                <select name="logo_display" value={profileData.logo_display || 'top-right'} onChange={handleProfileChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                  <option value="top-right">Top Right</option>
+                  <option value="top-left">Top Left</option>
+                  <option value="background">Background (Watermark)</option>
+                </select>
               </div>
 
               <div className="flex justify-end">

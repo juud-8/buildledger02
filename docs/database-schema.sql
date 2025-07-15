@@ -17,6 +17,8 @@ CREATE TABLE profiles (
   zip_code TEXT,
   trade_type TEXT,
   license_number TEXT,
+  logo_url TEXT, -- URL to the business logo image
+  logo_display TEXT DEFAULT 'top-right', -- logo placement preference: 'top-right', 'top-left', 'background'
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   PRIMARY KEY (id)
