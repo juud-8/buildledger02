@@ -143,7 +143,6 @@ export default function EditInvoicePage() {
 
     try {
       const totalAmount = lineItems.reduce((sum, item) => sum + item.total, 0)
-      const taxAmount = (totalAmount * formData.tax_rate) / 100
 
       // Update invoice
       const { error: invoiceError } = await supabase

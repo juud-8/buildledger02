@@ -1,6 +1,6 @@
 // src/app/payments/new/page.tsx
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -107,11 +107,11 @@ export default function NewPaymentPage() {
     }
   }
 
-  const handleInvoiceChange = (id: string) => {
+  const handleInvoiceChange = useCallback((id: string) => {
     const invoice = invoices.find(inv => inv.id === id)
     setSelectedInvoice(invoice || null)
     setValue('amount', invoice?.balance_due || 0)
-  }
+  }, [invoices, setValue])
 
   return (
     <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
