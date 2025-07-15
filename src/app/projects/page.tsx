@@ -70,8 +70,29 @@ export default function ProjectsPage() {
   useEffect(() => {
     if (user) {
       fetchProjects()
+
+      const subscription = supabase
+        .channel('projects_changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'projects'
+        }, (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setProjects(prev => [payload.new, ...prev])
+          } else if (payload.eventType === 'UPDATE') {
+            setProjects(prev => prev.map(p => p.id === payload.new.id ? payload.new : p))
+          } else if (payload.eventType === 'DELETE') {
+            setProjects(prev => prev.filter(p => p.id !== payload.old.id))
+          }
+        })
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(subscription)
+      }
     }
-  }, [user, fetchProjects])
+  }, [user, supabase, fetchProjects])
 
   const handleDelete = async (id: string) => {
     try {

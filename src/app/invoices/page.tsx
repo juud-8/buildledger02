@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
 import Link from 'next/link'
-import { Plus, Search, Edit, Trash2, Eye, Send, DollarSign, Calendar, FileText, CheckCircle, AlertCircle, Clock } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Eye, Send, DollarSign, Calendar, FileText, CheckCircle, AlertCircle } from 'lucide-react'
 
 interface Invoice {
   id: string
@@ -77,8 +77,30 @@ export default function InvoicesPage() {
   useEffect(() => {
     if (user) {
       fetchInvoices()
+
+      // Real-time subscription
+      const subscription = supabase
+        .channel('invoices_changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'invoices'
+        }, (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setInvoices(prev => [payload.new, ...prev])
+          } else if (payload.eventType === 'UPDATE') {
+            setInvoices(prev => prev.map(inv => inv.id === payload.new.id ? payload.new : inv))
+          } else if (payload.eventType === 'DELETE') {
+            setInvoices(prev => prev.filter(inv => inv.id !== payload.old.id))
+          }
+        })
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(subscription)
+      }
     }
-  }, [user, fetchInvoices])
+  }, [user, supabase, fetchInvoices])
 
   const handleDelete = async (id: string) => {
     try {

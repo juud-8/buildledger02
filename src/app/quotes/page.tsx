@@ -75,8 +75,29 @@ export default function QuotesPage() {
   useEffect(() => {
     if (user) {
       fetchQuotes()
+
+      const subscription = supabase
+        .channel('quotes_changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'quotes'
+        }, (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setQuotes(prev => [payload.new, ...prev])
+          } else if (payload.eventType === 'UPDATE') {
+            setQuotes(prev => prev.map(q => q.id === payload.new.id ? payload.new : q))
+          } else if (payload.eventType === 'DELETE') {
+            setQuotes(prev => prev.filter(q => q.id !== payload.old.id))
+          }
+        })
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(subscription)
+      }
     }
-  }, [user, fetchQuotes])
+  }, [user, supabase, fetchQuotes])
 
   const handleDelete = async (id: string) => {
     try {

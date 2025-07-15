@@ -26,9 +26,15 @@ export const sendEmail = async (emailData: EmailData) => {
       throw new Error('SendGrid API key not configured')
     }
 
+    // Use default sender email if not provided
+    const fromEmail = emailData.from || process.env.DEFAULT_SENDER_EMAIL
+    if (!fromEmail) {
+      throw new Error('No sender email configured. Please set DEFAULT_SENDER_EMAIL environment variable.')
+    }
+
     const msg = {
       to: emailData.to,
-      from: emailData.from, // This should be a verified sender in SendGrid
+      from: fromEmail, // This should be a verified sender in SendGrid
       subject: emailData.subject,
       text: emailData.text,
       html: emailData.html,

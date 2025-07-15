@@ -114,9 +114,18 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Email API error:', error)
+    let errorMessage = 'Failed to send email'
+    let status = 500
+    if (error.response?.status === 401) {
+      errorMessage = 'Unauthorized: Invalid SendGrid API key or sender verification'
+      status = 401
+    } else if (error.response?.status === 400) {
+      errorMessage = 'Bad Request: Invalid email data'
+      status = 400
+    }
     return NextResponse.json(
-      { error: 'Failed to send email', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+      { error: errorMessage, details: error instanceof Error ? error.message : 'Unknown error' },
+      { status }
     )
   }
 }

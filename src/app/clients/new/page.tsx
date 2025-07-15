@@ -5,61 +5,69 @@ import { useRouter } from 'next/navigation'
 import { useSupabase } from '@/lib/hooks/useSupabase'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+
+const clientSchema = z.object({
+  name: z.string().nonempty('Client name is required'),
+  email: z.string().email('Invalid email').optional(),
+  phone: z.string().optional(),
+  company_name: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zip_code: z.string().optional(),
+  notes: z.string().optional()
+})
+
+type ClientForm = z.infer<typeof clientSchema>
 
 export default function NewClientPage() {
   const { user, supabase } = useSupabase()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    company_name: '',
-    address: '',
-    city: '',
-    state: '',
-    zip_code: '',
-    notes: ''
+  const { register, handleSubmit, formState: { errors } } = useForm<ClientForm>({
+    resolver: zodResolver(clientSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      company_name: '',
+      address: '',
+      city: '',
+      state: '',
+      zip_code: '',
+      notes: ''
+    }
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (data: ClientForm) => {
     if (!user) return
-
     setLoading(true)
     try {
       const { error } = await supabase
         .from('clients')
-        .insert([
-          {
-            ...formData,
-            user_id: user.id,
-            email: formData.email || null,
-            phone: formData.phone || null,
-            company_name: formData.company_name || null,
-            address: formData.address || null,
-            city: formData.city || null,
-            state: formData.state || null,
-            zip_code: formData.zip_code || null,
-            notes: formData.notes || null
-          }
-        ])
+        .insert([{
+          ...data,
+          user_id: user.id,
+          email: data.email || null,
+          phone: data.phone || null,
+          company_name: data.company_name || null,
+          address: data.address || null,
+          city: data.city || null,
+          state: data.state || null,
+          zip_code: data.zip_code || null,
+          notes: data.notes || null
+        }])
 
       if (error) throw error
-
       router.push('/clients')
     } catch (error) {
       console.error('Error creating client:', error)
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
   }
 
   return (
@@ -84,151 +92,54 @@ export default function NewClientPage() {
 
       {/* Form */}
       <div className="bg-white shadow rounded-lg">
-        <form onSubmit={handleSubmit} className="space-y-6 px-4 py-5 sm:p-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 px-4 py-5 sm:p-6">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Client Name *
-              </label>
-              <input
-                type="text"
-                name="name"
-                id="name"
-                required
-                value={formData.name}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Client Name *</label>
+              <input type="text" {...register('name')} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
             </div>
-
             <div>
-              <label htmlFor="company_name" className="block text-sm font-medium text-gray-700">
-                Company Name
-              </label>
-              <input
-                type="text"
-                name="company_name"
-                id="company_name"
-                value={formData.company_name}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
+              <label htmlFor="company_name" className="block text-sm font-medium text-gray-700">Company Name</label>
+              <input type="text" {...register('company_name')} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
             </div>
-
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                id="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+              <input type="email" {...register('email')} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
             </div>
-
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                Phone
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                id="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
+              <input type="tel" {...register('phone')} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
             </div>
           </div>
-
           <div>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-              Address
-            </label>
-            <input
-              type="text"
-              name="address"
-              id="address"
-              value={formData.address}
-              onChange={handleChange}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
+            <label htmlFor="address" className="block text-sm font-medium text-gray-700">Address</label>
+            <input type="text" {...register('address')} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
           </div>
-
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <div>
-              <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                City
-              </label>
-              <input
-                type="text"
-                name="city"
-                id="city"
-                value={formData.city}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
+              <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
+              <input type="text" {...register('city')} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
             </div>
-
             <div>
-              <label htmlFor="state" className="block text-sm font-medium text-gray-700">
-                State
-              </label>
-              <input
-                type="text"
-                name="state"
-                id="state"
-                value={formData.state}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
+              <label htmlFor="state" className="block text-sm font-medium text-gray-700">State</label>
+              <input type="text" {...register('state')} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
             </div>
-
             <div>
-              <label htmlFor="zip_code" className="block text-sm font-medium text-gray-700">
-                ZIP Code
-              </label>
-              <input
-                type="text"
-                name="zip_code"
-                id="zip_code"
-                value={formData.zip_code}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
+              <label htmlFor="zip_code" className="block text-sm font-medium text-gray-700">ZIP Code</label>
+              <input type="text" {...register('zip_code')} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
             </div>
           </div>
-
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
-              Notes
-            </label>
-            <textarea
-              name="notes"
-              id="notes"
-              rows={3}
-              value={formData.notes}
-              onChange={handleChange}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Additional notes about this client..."
-            />
+            <label htmlFor="notes" className="block text-sm font-medium text-gray-700">Notes</label>
+            <textarea rows={3} {...register('notes')} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Additional notes about this client..." />
           </div>
-
           <div className="flex justify-end space-x-3">
-            <Link
-              href="/clients"
-              className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
+            <Link href="/clients" className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
               Cancel
             </Link>
-            <button
-              type="submit"
-              disabled={loading}
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-            >
+            <button type="submit" disabled={loading} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
               {loading ? 'Creating...' : 'Create Client'}
             </button>
           </div>

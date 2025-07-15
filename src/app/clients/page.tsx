@@ -45,8 +45,29 @@ export default function ClientsPage() {
   useEffect(() => {
     if (user) {
       fetchClients()
+
+      const subscription = supabase
+        .channel('clients_changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'clients'
+        }, (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setClients(prev => [payload.new, ...prev])
+          } else if (payload.eventType === 'UPDATE') {
+            setClients(prev => prev.map(c => c.id === payload.new.id ? payload.new : c))
+          } else if (payload.eventType === 'DELETE') {
+            setClients(prev => prev.filter(c => c.id !== payload.old.id))
+          }
+        })
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(subscription)
+      }
     }
-  }, [user, fetchClients])
+  }, [user, supabase, fetchClients])
 
   const handleDelete = async (id: string) => {
     try {
