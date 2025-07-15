@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     
     // Test 1: Check if we can connect to the database
     const { data: connection, error: connectionError } = await supabase

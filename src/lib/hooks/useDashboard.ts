@@ -177,7 +177,7 @@ export const useDashboard = () => {
       if (invoicesError) throw invoicesError
 
             recentInvoices?.forEach(invoice => {
-        const project = invoice.projects as any
+        const project = invoice.projects as { clients?: Array<{ company_name?: string; name?: string }> }
         const clientName = project?.clients?.[0]?.company_name ||
                           project?.clients?.[0]?.name || 'Unknown Client'
         
@@ -235,8 +235,9 @@ export const useDashboard = () => {
       if (quotesError) throw quotesError
 
       recentQuotes?.forEach(quote => {
-        const clientName = (quote.projects as { clients: Array<{ company_name?: string; name: string }> })?.clients?.[0]?.company_name || 
-                          (quote.projects as { clients: Array<{ company_name?: string; name: string }> })?.clients?.[0]?.name || 'Unknown Client'
+        const project = quote.projects as { clients?: Array<{ company_name?: string; name?: string }> }
+        const clientName = project?.clients?.[0]?.company_name ||
+                          project?.clients?.[0]?.name || 'Unknown Client'
         
         activities.push({
           id: `quote-${quote.id}`,
@@ -297,14 +298,15 @@ export const useDashboard = () => {
       upcomingInvoices?.forEach(invoice => {
         const dueDate = new Date(invoice.due_date)
         const isPaid = invoice.amount_paid >= invoice.total_amount
-        const clientName = invoice.projects?.clients?.[0]?.company_name || 
-                          invoice.projects?.clients?.[0]?.name || 'Unknown Client'
+        const project = invoice.projects as { clients?: Array<{ company_name?: string; name?: string }>; name?: string }
+        const clientName = project?.clients?.[0]?.company_name ||
+                          project?.clients?.[0]?.name || 'Unknown Client'
         
         if (!isPaid) {
           upcoming.push({
             id: `invoice-due-${invoice.id}`,
             title: `Invoice ${invoice.invoice_number} Due`,
-            description: `${clientName} - ${invoice.projects?.name || 'Unknown Project'}`,
+            description: `${clientName} - ${project?.name || 'Unknown Project'}`,
             dueDate: invoice.due_date,
             type: 'invoice_due',
             isOverdue: dueDate < today
@@ -335,7 +337,8 @@ export const useDashboard = () => {
 
       upcomingProjects?.forEach(project => {
         const endDate = new Date(project.end_date)
-        const clientName = project.clients?.company_name || project.clients?.name || 'Unknown Client'
+        const clients = project.clients as { company_name?: string; name?: string }[] | undefined
+        const clientName = clients?.[0]?.company_name || clients?.[0]?.name || 'Unknown Client'
         
         upcoming.push({
           id: `project-${project.id}`,

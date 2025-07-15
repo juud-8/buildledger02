@@ -62,13 +62,6 @@ export default function NewPaymentPage() {
     if (user) fetchInvoices()
   }, [user, supabase])
 
-  useEffect(() => {
-    if (preselectedInvoiceId && invoices.length > 0) {
-      handleInvoiceChange(preselectedInvoiceId)
-      setValue('invoice_id', preselectedInvoiceId)
-    }
-  }, [invoices, preselectedInvoiceId, setValue])
-
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     if (!user) return
     
@@ -115,6 +108,13 @@ export default function NewPaymentPage() {
     setSelectedInvoice(invoice || null)
     setValue('amount', invoice?.balance_due || 0)
   }, [invoices, setValue])
+
+  useEffect(() => {
+    if (preselectedInvoiceId && invoices.length > 0) {
+      handleInvoiceChange(preselectedInvoiceId)
+      setValue('invoice_id', preselectedInvoiceId)
+    }
+  }, [invoices, preselectedInvoiceId, setValue, handleInvoiceChange])
 
   return (
     <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
