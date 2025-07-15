@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerComponentClient({ cookies })
+    const supabase = createRouteHandlerClient({ cookies })
     
     // Check authentication
     const { data: { user } } = await supabase.auth.getUser()
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Generate a comprehensive Invoice PDF
-const generateInvoicePDF = async (invoiceId: string, supabase: ReturnType<typeof createServerComponentClient>) => {
+const generateInvoicePDF = async (invoiceId: string, supabase: ReturnType<typeof createRouteHandlerClient>) => {
   const { data: invoice } = await supabase
     .from('invoices')
     .select(`
@@ -305,7 +305,7 @@ const generateInvoicePDF = async (invoiceId: string, supabase: ReturnType<typeof
 }
 
 // Generate a comprehensive Quote PDF
-const generateQuotePDF = async (quoteId: string, supabase: ReturnType<typeof createServerComponentClient>) => {
+const generateQuotePDF = async (quoteId: string, supabase: ReturnType<typeof createRouteHandlerClient>) => {
   const { data: quote } = await supabase
     .from('quotes')
     .select(`
