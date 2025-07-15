@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
 import { User, Building, Bell, Shield, Save } from 'lucide-react'
+import Image from 'next/image'
 
 interface UserProfile {
   id: string
@@ -296,12 +297,12 @@ export default function SettingsPage() {
     try {
       const fileExt = logoFile.name.split('.').pop()
       const filePath = `logos/${user.id}.${fileExt}`
-      const { data, error } = await supabase.storage.from('public').upload(filePath, logoFile, { upsert: true })
+      const { error } = await supabase.storage.from('public').upload(filePath, logoFile, { upsert: true })
       if (error) throw error
       const { data: { publicUrl } } = supabase.storage.from('public').getPublicUrl(filePath)
       setLogoPreview(publicUrl)
       return publicUrl
-    } catch (err) {
+    } catch {
       setError('Logo upload failed')
       return null
     } finally {
@@ -567,7 +568,7 @@ export default function SettingsPage() {
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">Business Logo</label>
                 {logoPreview && (
-                  <img src={logoPreview} alt="Logo Preview" className="h-20 mb-2 rounded border" />
+                  <Image src={logoPreview} alt="Logo Preview" width={80} height={80} className="h-20 mb-2 rounded border object-contain" />
                 )}
                 <input type="file" accept="image/*" onChange={handleLogoChange} className="block" />
                 {logoUploading && <div className="text-xs text-gray-500">Uploading...</div>}
