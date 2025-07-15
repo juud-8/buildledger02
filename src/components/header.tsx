@@ -32,7 +32,7 @@ export default function Header() {
             <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             <span className="sr-only">Toggle theme</span>
           </Button>
-          <Link href="/auth/signup" passHref legacyBehavior>
+          <Link href="/auth/signup">
             <Button className="hidden sm:inline-flex bg-gray-800 text-white hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200">
               Get Started
             </Button>
