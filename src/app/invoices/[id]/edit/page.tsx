@@ -144,7 +144,6 @@ export default function EditInvoicePage() {
     try {
       const totalAmount = lineItems.reduce((sum, item) => sum + item.total, 0)
       const taxAmount = (totalAmount * formData.tax_rate) / 100
-      const totalWithTax = totalAmount + taxAmount
 
       // Update invoice
       const { error: invoiceError } = await supabase
@@ -418,7 +417,7 @@ export default function EditInvoicePage() {
             </div>
 
             <div className="space-y-4">
-              {lineItems.map((item, index) => (
+              {lineItems.map((item) => (
                 <div key={item.id} className="grid grid-cols-12 gap-4 items-end">
                   <div className="col-span-6">
                     <label className="block text-sm font-medium text-gray-700 mb-1">

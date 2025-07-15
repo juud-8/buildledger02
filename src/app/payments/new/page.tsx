@@ -67,7 +67,7 @@ export default function NewPaymentPage() {
       handleInvoiceChange(preselectedInvoiceId)
       setValue('invoice_id', preselectedInvoiceId)
     }
-  }, [invoices, preselectedInvoiceId, setValue])
+  }, [invoices, preselectedInvoiceId, setValue, handleInvoiceChange])
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setLoading(true)
