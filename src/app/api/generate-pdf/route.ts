@@ -83,7 +83,7 @@ const generateInvoicePDF = async (invoiceId: string, supabase: SupabaseClient) =
     .eq('id', invoice.user_id)
     .single()
 
-  const { jsPDF } = await import('jspdf')
+  const jsPDF = (await import('jspdf')).default
   const doc = new jsPDF()
   
   // Set up fonts and colors
@@ -344,7 +344,7 @@ const generateQuotePDF = async (quoteId: string, supabase: SupabaseClient) => {
     .eq('id', quote.user_id)
     .single()
 
-  const { jsPDF } = await import('jspdf')
+  const jsPDF = (await import('jspdf')).default
   const doc = new jsPDF()
   
   // Set up fonts and colors
