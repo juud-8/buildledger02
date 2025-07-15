@@ -84,9 +84,9 @@ export default function QuotesPage() {
           table: 'quotes'
         }, (payload) => {
           if (payload.eventType === 'INSERT') {
-            setQuotes(prev => [payload.new, ...prev])
+            setQuotes(prev => [payload.new as Quote, ...prev])
           } else if (payload.eventType === 'UPDATE') {
-            setQuotes(prev => prev.map(q => q.id === payload.new.id ? payload.new : q))
+            setQuotes(prev => prev.map(q => q.id === payload.new.id ? payload.new as Quote : q))
           } else if (payload.eventType === 'DELETE') {
             setQuotes(prev => prev.filter(q => q.id !== payload.old.id))
           }

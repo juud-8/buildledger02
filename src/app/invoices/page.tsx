@@ -87,9 +87,9 @@ export default function InvoicesPage() {
           table: 'invoices'
         }, (payload) => {
           if (payload.eventType === 'INSERT') {
-            setInvoices(prev => [payload.new, ...prev])
+            setInvoices(prev => [payload.new as Invoice, ...prev])
           } else if (payload.eventType === 'UPDATE') {
-            setInvoices(prev => prev.map(inv => inv.id === payload.new.id ? payload.new : inv))
+            setInvoices(prev => prev.map(inv => inv.id === payload.new.id ? payload.new as Invoice : inv))
           } else if (payload.eventType === 'DELETE') {
             setInvoices(prev => prev.filter(inv => inv.id !== payload.old.id))
           }

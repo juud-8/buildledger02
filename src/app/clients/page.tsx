@@ -54,9 +54,9 @@ export default function ClientsPage() {
           table: 'clients'
         }, (payload) => {
           if (payload.eventType === 'INSERT') {
-            setClients(prev => [payload.new, ...prev])
+            setClients(prev => [payload.new as Client, ...prev])
           } else if (payload.eventType === 'UPDATE') {
-            setClients(prev => prev.map(c => c.id === payload.new.id ? payload.new : c))
+            setClients(prev => prev.map(c => c.id === payload.new.id ? payload.new as Client : c))
           } else if (payload.eventType === 'DELETE') {
             setClients(prev => prev.filter(c => c.id !== payload.old.id))
           }

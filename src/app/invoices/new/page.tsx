@@ -281,9 +281,9 @@ export default function NewInvoicePage() {
                   <div className="text-2xl font-bold text-gray-900">
                     ${ getValues('lineItems').reduce((sum, item) => sum + (item.quantity * item.unit_price), 0).toFixed(2) }
                   </div>
-                  {getValues('amount_paid') > 0 && (
+                  {(getValues('amount_paid') ?? 0) > 0 && (
                     <div className="text-sm text-gray-600 mt-1">
-                      Remaining: ${ (getValues('lineItems').reduce((sum, item) => sum + (item.quantity * item.unit_price), 0) - getValues('amount_paid')).toFixed(2) }
+                      Remaining: ${ (getValues('lineItems').reduce((sum, item) => sum + (item.quantity * item.unit_price), 0) - (getValues('amount_paid') ?? 0)).toFixed(2) }
                     </div>
                   )}
                 </div>
