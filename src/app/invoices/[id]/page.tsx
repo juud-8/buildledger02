@@ -333,7 +333,7 @@ export default function InvoiceViewPage() {
         status={invoice.status}
         totalAmount={invoice.total_amount}
         createdAt={invoice.created_at}
-        isOverdue={isOverdue}
+        isOverdue={Boolean(isOverdue)}
       />
 
       {/* Client and Project Info */}

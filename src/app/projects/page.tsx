@@ -79,9 +79,9 @@ export default function ProjectsPage() {
           table: 'projects'
         }, (payload) => {
           if (payload.eventType === 'INSERT') {
-            setProjects(prev => [payload.new, ...prev])
+            setProjects(prev => [payload.new as Project, ...prev])
           } else if (payload.eventType === 'UPDATE') {
-            setProjects(prev => prev.map(p => p.id === payload.new.id ? payload.new : p))
+            setProjects(prev => prev.map(p => p.id === payload.new.id ? payload.new as Project : p))
           } else if (payload.eventType === 'DELETE') {
             setProjects(prev => prev.filter(p => p.id !== payload.old.id))
           }

@@ -1,12 +1,11 @@
 // src/app/api/send-email/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { sendEmail, createQuoteEmail, createInvoiceEmail } from '@/lib/email/sendgrid'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createServerClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerComponentClient({ cookies })
+    const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
@@ -138,7 +137,7 @@ export async function POST(request: NextRequest) {
 
 // Generate a simple Quote PDF using jsPDF
 const generateQuotePDF = async (quoteId: string) => {
-  const supabase = createServerComponentClient({ cookies })
+  const supabase = createServerClient()
   const { data: quote } = await supabase
     .from('quotes')
     .select(
@@ -179,7 +178,7 @@ const generateQuotePDF = async (quoteId: string) => {
 
 // Generate a simple Invoice PDF using jsPDF
 const generateInvoicePDF = async (invoiceId: string) => {
-  const supabase = createServerComponentClient({ cookies })
+  const supabase = createServerClient()
   const { data: invoice } = await supabase
     .from('invoices')
     .select(

@@ -21,7 +21,7 @@ type Invoice = {
 
 const formSchema = z.object({
   invoice_id: z.string().nonempty('Select an invoice'),
-  amount: z.number().positive('Amount must be positive').max(z.number(), { message: 'Amount exceeds balance' }),
+  amount: z.number().positive('Amount must be positive'),
   payment_date: z.string().nonempty('Select a date'),
   payment_method: z.string().optional(),
   reference_number: z.string().optional(),
@@ -67,9 +67,11 @@ export default function NewPaymentPage() {
       handleInvoiceChange(preselectedInvoiceId)
       setValue('invoice_id', preselectedInvoiceId)
     }
-  }, [invoices, preselectedInvoiceId, setValue, handleInvoiceChange])
+  }, [invoices, preselectedInvoiceId, setValue])
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    if (!user) return
+    
     setLoading(true)
     setError('')
     try {
@@ -90,6 +92,7 @@ export default function NewPaymentPage() {
       if (insertError) throw insertError
 
       // Update invoice amount_paid
+      if (!selectedInvoice) throw new Error('Selected invoice not found')
       const newAmountPaid = selectedInvoice.amount_paid + data.amount
       const { error: updateError } = await supabase
         .from('invoices')
@@ -100,7 +103,7 @@ export default function NewPaymentPage() {
 
       router.push('/payments')
     } catch (err) {
-      setError(err.message || 'Failed to record payment')
+      setError(err instanceof Error ? err.message : 'Failed to record payment')
       console.error('Error recording payment:', err)
     } finally {
       setLoading(false)

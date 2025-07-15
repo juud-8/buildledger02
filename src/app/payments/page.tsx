@@ -33,16 +33,39 @@ export default function PaymentsPage() {
           *,
           invoices (invoice_number)
         `)
-        .order('payment_date', { ascending: false })
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
 
-      if (error) throw error
-      setPayments(data || [])
+      if (error) {
+        console.error('Error fetching payments:', error)
+      } else {
+        setPayments(data || [])
+      }
     } catch (error) {
-      console.error('Error fetching payments:', error)
+      console.error('Error:', error)
     } finally {
       setLoading(false)
     }
-  }, [supabase])
+  }, [supabase, user?.id])
+
+  const handleDelete = async (paymentId: string) => {
+    if (!confirm('Are you sure you want to delete this payment?')) return
+    
+    try {
+      const { error } = await supabase
+        .from('payments')
+        .delete()
+        .eq('id', paymentId)
+
+      if (error) throw error
+      
+      // Remove from local state
+      setPayments(prev => prev.filter(p => p.id !== paymentId))
+    } catch (error) {
+      console.error('Error deleting payment:', error)
+      alert('Failed to delete payment')
+    }
+  }
 
   useEffect(() => {
     if (user) {
@@ -56,9 +79,9 @@ export default function PaymentsPage() {
           table: 'payments'
         }, (payload) => {
           if (payload.eventType === 'INSERT') {
-            setPayments(prev => [payload.new, ...prev])
+            setPayments(prev => [payload.new as Payment, ...prev])
           } else if (payload.eventType === 'UPDATE') {
-            setPayments(prev => prev.map(p => p.id === payload.new.id ? payload.new : p))
+            setPayments(prev => prev.map(p => p.id === payload.new.id ? payload.new as Payment : p))
           } else if (payload.eventType === 'DELETE') {
             setPayments(prev => prev.filter(p => p.id !== payload.old.id))
           }
@@ -122,7 +145,7 @@ export default function PaymentsPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{payment.payment_method || 'N/A'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{payment.reference_number || 'N/A'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button onClick={() => setDeleteId(payment.id)} className="text-red-600 hover:text-red-900">
+                  <button onClick={() => handleDelete(payment.id)} className="text-red-600 hover:text-red-900">
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </td>

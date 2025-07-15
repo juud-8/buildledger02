@@ -176,9 +176,10 @@ export const useDashboard = () => {
 
       if (invoicesError) throw invoicesError
 
-      recentInvoices?.forEach(invoice => {
-        const clientName = (invoice.projects as { clients: Array<{ company_name?: string; name: string }> })?.clients?.[0]?.company_name || 
-                          (invoice.projects as { clients: Array<{ company_name?: string; name: string }> })?.clients?.[0]?.name || 'Unknown Client'
+            recentInvoices?.forEach(invoice => {
+        const project = invoice.projects as any
+        const clientName = project?.clients?.[0]?.company_name ||
+                          project?.clients?.[0]?.name || 'Unknown Client'
         
         activities.push({
           id: `invoice-${invoice.id}`,
