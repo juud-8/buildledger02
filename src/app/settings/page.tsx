@@ -292,7 +292,7 @@ export default function SettingsPage() {
   }
 
   const handleLogoUpload = async () => {
-    if (!logoFile) return null
+    if (!logoFile || !user) return null
     setLogoUploading(true)
     try {
       const fileExt = logoFile.name.split('.').pop()
