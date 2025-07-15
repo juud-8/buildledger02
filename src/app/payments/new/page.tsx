@@ -8,10 +8,6 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { formatCurrency } from '@/lib/utils/formatters'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
 import { AlertCircle } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 
@@ -123,45 +119,74 @@ export default function NewPaymentPage() {
       {error && <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-md flex items-center"><AlertCircle className="mr-2" /> {error}</div>}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div>
-          <Label htmlFor="invoice_id">Invoice *</Label>
-          <Select id="invoice_id" {...register('invoice_id')} onValueChange={handleInvoiceChange}>
+          <label htmlFor="invoice_id" className="block text-sm font-medium text-gray-700 mb-1">Invoice *</label>
+          <select
+            id="invoice_id"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            {...register('invoice_id')}
+            onChange={e => { handleInvoiceChange(e.target.value); register('invoice_id').onChange(e); }}
+          >
             <option value="">Select an invoice</option>
             {invoices.map(inv => (
               <option key={inv.id} value={inv.id}>
                 {inv.invoice_number} - Balance: {formatCurrency(inv.balance_due)}
               </option>
             ))}
-          </Select>
+          </select>
           {errors.invoice_id && <p className="mt-1 text-sm text-red-600">{errors.invoice_id.message}</p>}
         </div>
         <div>
-          <Label htmlFor="amount">Amount *</Label>
-          <Input id="amount" type="number" step="0.01" {...register('amount', { valueAsNumber: true })} />
+          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">Amount *</label>
+          <input
+            id="amount"
+            type="number"
+            step="0.01"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            {...register('amount', { valueAsNumber: true })}
+          />
           {errors.amount && <p className="mt-1 text-sm text-red-600">{errors.amount.message}</p>}
           {selectedInvoice && <p className="mt-1 text-sm text-gray-500">Balance Due: {formatCurrency(selectedInvoice.balance_due)}</p>}
         </div>
         <div>
-          <Label htmlFor="payment_date">Payment Date *</Label>
-          <Input id="payment_date" type="date" {...register('payment_date')} />
+          <label htmlFor="payment_date" className="block text-sm font-medium text-gray-700 mb-1">Payment Date *</label>
+          <input
+            id="payment_date"
+            type="date"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            {...register('payment_date')}
+          />
           {errors.payment_date && <p className="mt-1 text-sm text-red-600">{errors.payment_date.message}</p>}
         </div>
         <div>
-          <Label htmlFor="payment_method">Payment Method</Label>
-          <Select id="payment_method" {...register('payment_method')}>
+          <label htmlFor="payment_method" className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+          <select
+            id="payment_method"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            {...register('payment_method')}
+          >
             <option value="">Select method</option>
             <option value="cash">Cash</option>
             <option value="check">Check</option>
             <option value="credit_card">Credit Card</option>
             <option value="bank_transfer">Bank Transfer</option>
-          </Select>
+          </select>
         </div>
         <div>
-          <Label htmlFor="reference_number">Reference Number</Label>
-          <Input id="reference_number" {...register('reference_number')} />
+          <label htmlFor="reference_number" className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
+          <input
+            id="reference_number"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            {...register('reference_number')}
+          />
         </div>
         <div>
-          <Label htmlFor="notes">Notes</Label>
-          <Textarea id="notes" {...register('notes')} />
+          <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+          <textarea
+            id="notes"
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm resize-none"
+            {...register('notes')}
+          />
         </div>
         <Button type="submit" disabled={loading} className="w-full">
           {loading ? 'Saving...' : 'Record Payment'}
