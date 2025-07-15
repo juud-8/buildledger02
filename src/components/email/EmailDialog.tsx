@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { Dialog } from '@radix-ui/react-dialog'
-import { X, Send, FileText, AlertCircle } from 'lucide-react'
+import { X, Send, FileText } from 'lucide-react'
 
 interface EmailDialogProps {
   isOpen: boolean
@@ -152,7 +152,7 @@ Your Company`
               <div className="flex items-start space-x-2">
                 <FileText className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-blue-800">
-                  <p className="font-medium">What's included:</p>
+                  <p className="font-medium">What&apos;s included:</p>
                   <ul className="mt-1 space-y-1">
                     <li>• Professional {type === 'invoice' ? 'invoice' : 'quote'} email</li>
                     <li>• PDF attachment with all details</li>

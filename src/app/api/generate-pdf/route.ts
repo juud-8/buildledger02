@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Generate a comprehensive Invoice PDF
-const generateInvoicePDF = async (invoiceId: string, supabase: any) => {
+const generateInvoicePDF = async (invoiceId: string, supabase: ReturnType<typeof createServerComponentClient>) => {
   const { data: invoice } = await supabase
     .from('invoices')
     .select(`
@@ -194,7 +194,7 @@ const generateInvoicePDF = async (invoiceId: string, supabase: any) => {
   doc.setTextColor(52, 73, 94)
   
   let currentY = startY + 5
-  lineItems?.forEach((item: any) => {
+  lineItems?.forEach((item: { description: string; item_type: string; quantity: number; unit_price: number; total_price: number }) => {
     if (currentY > 250) {
       doc.addPage()
       currentY = 20
@@ -305,7 +305,7 @@ const generateInvoicePDF = async (invoiceId: string, supabase: any) => {
 }
 
 // Generate a comprehensive Quote PDF
-const generateQuotePDF = async (quoteId: string, supabase: any) => {
+const generateQuotePDF = async (quoteId: string, supabase: ReturnType<typeof createServerComponentClient>) => {
   const { data: quote } = await supabase
     .from('quotes')
     .select(`
@@ -455,7 +455,7 @@ const generateQuotePDF = async (quoteId: string, supabase: any) => {
   doc.setTextColor(52, 73, 94)
   
   let currentY = startY + 5
-  lineItems?.forEach((item: any) => {
+  lineItems?.forEach((item: { description: string; item_type: string; quantity: number; unit_price: number; total_price: number }) => {
     if (currentY > 250) {
       doc.addPage()
       currentY = 20

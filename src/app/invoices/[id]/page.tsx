@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Edit, Send, DollarSign, FileText, CheckCircle, AlertCircle, Clock, Download, Printer } from 'lucide-react'
 import EmailDialog from '@/components/email/EmailDialog'

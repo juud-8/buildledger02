@@ -177,8 +177,8 @@ export const useDashboard = () => {
       if (invoicesError) throw invoicesError
 
       recentInvoices?.forEach(invoice => {
-        const clientName = (invoice.projects as any)?.clients?.[0]?.company_name || 
-                          (invoice.projects as any)?.clients?.[0]?.name || 'Unknown Client'
+        const clientName = (invoice.projects as { clients: Array<{ company_name?: string; name: string }> })?.clients?.[0]?.company_name || 
+                          (invoice.projects as { clients: Array<{ company_name?: string; name: string }> })?.clients?.[0]?.name || 'Unknown Client'
         
         activities.push({
           id: `invoice-${invoice.id}`,
@@ -234,8 +234,8 @@ export const useDashboard = () => {
       if (quotesError) throw quotesError
 
       recentQuotes?.forEach(quote => {
-        const clientName = (quote.projects as any)?.clients?.[0]?.company_name || 
-                          (quote.projects as any)?.clients?.[0]?.name || 'Unknown Client'
+        const clientName = (quote.projects as { clients: Array<{ company_name?: string; name: string }> })?.clients?.[0]?.company_name || 
+                          (quote.projects as { clients: Array<{ company_name?: string; name: string }> })?.clients?.[0]?.name || 'Unknown Client'
         
         activities.push({
           id: `quote-${quote.id}`,

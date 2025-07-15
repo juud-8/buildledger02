@@ -2,7 +2,7 @@
 'use client'
 import { useState, useCallback, useEffect } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
-import { Trash2, Search, AlertCircle, CreditCard } from 'lucide-react'
+import { Trash2, Search, AlertCircle } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils/formatters'
 import Link from 'next/link'
 
@@ -23,7 +23,6 @@ export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const fetchPayments = useCallback(async () => {
     setLoading(true)
@@ -71,17 +70,6 @@ export default function PaymentsPage() {
       }
     }
   }, [user, supabase, fetchPayments])
-
-  const handleDelete = async (id: string) => {
-    try {
-      const { error } = await supabase.from('payments').delete().eq('id', id)
-      if (error) throw error
-      setPayments(payments.filter(p => p.id !== id))
-      setDeleteId(null)
-    } catch (error) {
-      console.error('Error deleting payment:', error)
-    }
-  }
 
   const filteredPayments = payments.filter(p =>
     p.invoices.invoice_number.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -1,6 +1,5 @@
 // src/components/invoices/InvoiceHeader.tsx
-import Link from 'next/link'
-import { ArrowLeft, FileText, Send, CheckCircle, AlertCircle, Clock } from 'lucide-react'
+import { FileText, Send, CheckCircle, AlertCircle, Clock } from 'lucide-react'
 
 type InvoiceHeaderProps = {
   invoiceNumber: string

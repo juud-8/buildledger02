@@ -1,9 +1,9 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Edit, Send, DollarSign, Calendar, FileText, CheckCircle, AlertCircle, Clock, Download, Printer } from 'lucide-react'
+import { ArrowLeft, Edit, Send, FileText, CheckCircle, AlertCircle, Download, Printer } from 'lucide-react'
 
 interface Quote {
   id: string
@@ -58,7 +58,6 @@ const statusIcons = {
 export default function QuoteViewPage() {
   const { user, supabase } = useSupabase()
   const params = useParams()
-  const router = useRouter()
   const [quote, setQuote] = useState<Quote | null>(null)
   const [lineItems, setLineItems] = useState<LineItem[]>([])
   const [loading, setLoading] = useState(true)
