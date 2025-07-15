@@ -151,7 +151,7 @@ const generateQuotePDF = async (quoteId: string) => {
     throw new Error('Quote not found')
   }
 
-  const { jsPDF } = await import('jspdf')
+  const jsPDF = (await import('jspdf')).default
   const doc = new jsPDF()
   doc.setFontSize(16)
   doc.text(`Quote ${quote.quote_number}`, 10, 20)
@@ -192,7 +192,7 @@ const generateInvoicePDF = async (invoiceId: string) => {
     throw new Error('Invoice not found')
   }
 
-  const { jsPDF } = await import('jspdf')
+  const jsPDF = (await import('jspdf')).default
   const doc = new jsPDF()
   doc.setFontSize(16)
   doc.text(`Invoice ${invoice.invoice_number}`, 10, 20)
