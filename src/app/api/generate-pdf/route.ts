@@ -82,6 +82,10 @@ const generateInvoicePDF = async (invoiceId: string, supabase: SupabaseClient) =
     .eq('id', invoice.user_id)
     .single()
 
+  const jsPDF = (await import('jspdf')).default
+  const doc = new jsPDF()
+
+  // Fetch and add logo image after doc is created
   const logoUrl = profile?.logo_url
   const logoDisplay = profile?.logo_display || 'top-right'
   if (logoUrl) {
@@ -99,9 +103,6 @@ const generateInvoicePDF = async (invoiceId: string, supabase: SupabaseClient) =
       doc.addImage(img as string, 'PNG', 150, 10, 40, 40, undefined, 'FAST')
     }
   }
-
-  const jsPDF = (await import('jspdf')).default
-  const doc = new jsPDF()
   
   // Set up fonts and colors
   doc.setFont('helvetica')
@@ -361,6 +362,10 @@ const generateQuotePDF = async (quoteId: string, supabase: SupabaseClient) => {
     .eq('id', quote.user_id)
     .single()
 
+  const jsPDF = (await import('jspdf')).default
+  const doc = new jsPDF()
+
+  // Fetch and add logo image after doc is created
   const logoUrl = profile?.logo_url
   const logoDisplay = profile?.logo_display || 'top-right'
   if (logoUrl) {
@@ -378,9 +383,6 @@ const generateQuotePDF = async (quoteId: string, supabase: SupabaseClient) => {
       doc.addImage(img as string, 'PNG', 150, 10, 40, 40, undefined, 'FAST')
     }
   }
-
-  const jsPDF = (await import('jspdf')).default
-  const doc = new jsPDF()
   
   // Set up fonts and colors
   doc.setFont('helvetica')
