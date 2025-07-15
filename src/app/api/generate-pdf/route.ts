@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { SupabaseClient } from '@supabase/supabase-js'
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Generate a comprehensive Invoice PDF
-const generateInvoicePDF = async (invoiceId: string, supabase: ReturnType<typeof createRouteHandlerClient>) => {
+const generateInvoicePDF = async (invoiceId: string, supabase: SupabaseClient) => {
   const { data: invoice } = await supabase
     .from('invoices')
     .select(`
@@ -305,7 +306,7 @@ const generateInvoicePDF = async (invoiceId: string, supabase: ReturnType<typeof
 }
 
 // Generate a comprehensive Quote PDF
-const generateQuotePDF = async (quoteId: string, supabase: ReturnType<typeof createRouteHandlerClient>) => {
+const generateQuotePDF = async (quoteId: string, supabase: SupabaseClient) => {
   const { data: quote } = await supabase
     .from('quotes')
     .select(`
