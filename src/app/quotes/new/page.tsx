@@ -106,7 +106,7 @@ export default function NewQuotePage() {
       const totalAmount = data.lineItems.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)
 
       // Create quote
-      const { error: quoteError } = await supabase
+      const { data: quote, error: quoteError } = await supabase
         .from('quotes')
         .insert([{
           quote_number: data.quote_number,
@@ -140,7 +140,7 @@ export default function NewQuotePage() {
         if (lineItemsError) throw lineItemsError
       }
 
-      router.push('/quotes')
+      router.push(`/quotes/${quote.id}`)
     } catch (error) {
       console.error('Error creating quote:', error)
       setError('Failed to create quote')

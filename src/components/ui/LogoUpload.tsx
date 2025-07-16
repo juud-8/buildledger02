@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { Upload, X, Image as ImageIcon } from 'lucide-react'
+import React, { useState, useRef } from 'react'
+import Image from 'next/image'
+import { Upload, X, Eye, Trash2 } from 'lucide-react'
+import { useLogoSettings } from '@/lib/hooks/useLogoSettings'
 import { Button } from '@/components/ui/button'
 
 interface LogoUploadProps {
@@ -107,9 +109,11 @@ export default function LogoUpload({
         <div className="flex-shrink-0">
           {previewUrl ? (
             <div className="relative">
-              <img
+              <Image
                 src={previewUrl}
                 alt="Company logo"
+                width={80}
+                height={80}
                 className="w-20 h-20 object-contain border border-gray-300 rounded-lg bg-white"
               />
               {isUploading && (
@@ -120,7 +124,7 @@ export default function LogoUpload({
             </div>
           ) : (
             <div className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
-              <ImageIcon className="w-8 h-8 text-gray-400" />
+              <Upload className="w-8 h-8 text-gray-400" />
             </div>
           )}
         </div>

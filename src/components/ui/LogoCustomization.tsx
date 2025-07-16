@@ -41,7 +41,6 @@ export default function LogoCustomization({
 }: LogoCustomizationProps) {
   const [showPreview, setShowPreview] = useState(false)
 
-  const selectedPosition = positionOptions.find(p => p.value === logoPosition)
   const selectedSize = sizeOptions.find(s => s.value === logoSize)
 
   return (

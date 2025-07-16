@@ -43,55 +43,28 @@ export async function POST(request: NextRequest) {
 
     console.log('Generated filename:', fileName)
 
-    // Use admin client for storage operations
-    const adminClient = createServerAdminClient()
-    
-    // Check if logos bucket exists first
-    const { data: buckets, error: bucketsError } = await adminClient.storage.listBuckets()
-    
-    if (bucketsError) {
-      console.error('Error listing buckets:', bucketsError)
-      return NextResponse.json({ 
-        error: 'Failed to access storage', 
-        details: bucketsError.message 
-      }, { status: 500 })
-    }
-
-    const logosBucket = buckets.find(bucket => bucket.name === 'logos')
-    if (!logosBucket) {
-      console.error('Logos bucket not found. Available buckets:', buckets.map(b => b.name))
-      return NextResponse.json({ 
-        error: 'Logos storage bucket not found', 
-        availableBuckets: buckets.map(b => b.name)
-      }, { status: 500 })
-    }
-
-    console.log('Logos bucket found:', logosBucket.name)
-
-    // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await adminClient.storage
+    // Upload file to Supabase Storage
+    console.log('Uploading file to storage...')
+    const { data, error: uploadError } = await supabase.storage
       .from('logos')
       .upload(fileName, file, {
         cacheControl: '3600',
-        upsert: false
+        upsert: true
       })
 
     if (uploadError) {
-      console.error('Storage upload error:', uploadError)
-      return NextResponse.json({ 
-        error: 'Failed to upload file', 
-        details: uploadError.message || 'Unknown storage error' 
-      }, { status: 500 })
+      console.error('Upload error:', uploadError)
+      throw new Error(`Failed to upload file: ${uploadError.message}`)
     }
 
-    console.log('Getting public URL for:', fileName)
-    
-    // Get public URL
-    const { data: { publicUrl } } = adminClient.storage
+    console.log('File uploaded successfully:', data)
+
+    // Get the public URL
+    const { data: { publicUrl } } = supabase.storage
       .from('logos')
       .getPublicUrl(fileName)
 
-    console.log('Public URL generated:', publicUrl)
+    console.log('Public URL:', publicUrl)
 
     // Update user profile with logo URL
     const { error: updateError } = await supabase
@@ -106,7 +79,7 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error('Profile update error:', updateError)
       // Try to delete the uploaded file if profile update fails
-      await adminClient.storage.from('logos').remove([fileName])
+      await supabase.storage.from('logos').remove([fileName])
       return NextResponse.json({ 
         error: 'Failed to update profile', 
         details: updateError.message 
@@ -130,7 +103,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE() {
   try {
     const supabase = await createServerClient()
     const adminClient = createServerAdminClient()
