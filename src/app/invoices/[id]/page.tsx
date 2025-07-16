@@ -70,26 +70,42 @@ export default function InvoiceViewPage() {
   const [showEmailDialog, setShowEmailDialog] = useState(false)
   const [payments, setPayments] = useState<Payment[]>([])
   const [autoOpenPrevented, setAutoOpenPrevented] = useState(false)
+  const [pageJustLoaded, setPageJustLoaded] = useState(true)
 
   const invoiceId = params.id as string
 
-  // Create a safe version of setShowEmailDialog that logs all attempts to open the dialog
+  // Create a super-safe version of setShowEmailDialog that prevents ALL automatic opening
   const safeSetShowEmailDialog = (value: boolean) => {
     if (value === true) {
       console.log('🚨 ATTEMPT TO OPEN EMAIL DIALOG:', {
         autoOpenPrevented,
+        pageJustLoaded,
         currentURL: window?.location?.href,
-        stack: new Error().stack?.split('\n').slice(0, 5).join('\n')
+        timestamp: new Date().toISOString(),
+        stack: new Error().stack?.split('\n').slice(0, 7).join('\n')
       })
       
-      // Prevent auto-opening for the first 2 seconds after page load
+      // SUPER AGGRESSIVE: Prevent auto-opening for the first 5 seconds after page load
       if (!autoOpenPrevented) {
-        console.log('🛡️ PREVENTED AUTO-OPEN - dialog opening blocked during initial load')
+        console.log('🛡️ PREVENTED AUTO-OPEN - dialog opening blocked during initial load (protection active)')
+        return
+      }
+      
+      // Additional protection: Block if page just loaded
+      if (pageJustLoaded) {
+        console.log('🛡️ PREVENTED AUTO-OPEN - page just loaded, blocking automatic dialog')
+        return
+      }
+      
+      // Final check: Require explicit user interaction
+      const timeSinceLoad = Date.now() - (window.performance?.timing?.loadEventEnd || 0)
+      if (timeSinceLoad < 3000) {
+        console.log('🛡️ PREVENTED AUTO-OPEN - page loaded less than 3 seconds ago')
         return
       }
     }
     
-    console.log('📧 EmailDialog state change:', value)
+    console.log('📧 EmailDialog state change:', value ? 'OPENING' : 'CLOSING')
     setShowEmailDialog(value)
   }
 
@@ -98,19 +114,31 @@ export default function InvoiceViewPage() {
     console.log('Invoice view page loaded - invoiceId:', invoiceId)
     console.log('showEmailDialog initial state:', showEmailDialog)
     console.log('Current URL:', typeof window !== 'undefined' ? window.location.href : 'N/A')
+    console.log('Page performance timing:', window.performance?.timing?.loadEventEnd)
   }, [invoiceId, showEmailDialog])
 
-  // Ensure showEmailDialog is always false on component mount
+  // Ensure showEmailDialog is always false on component mount with SUPER protection
   useEffect(() => {
+    console.log('🛡️ INITIALIZING PROTECTION - Setting up auto-open prevention')
     setShowEmailDialog(false)
+    setPageJustLoaded(true)
     
-    // Set up auto-open prevention for the first 2 seconds
-    const timer = setTimeout(() => {
+    // Set up auto-open prevention for the first 5 seconds (increased from 2)
+    const protectionTimer = setTimeout(() => {
       setAutoOpenPrevented(true)
-      console.log('🛡️ Auto-open prevention lifted - manual dialog opening now allowed')
-    }, 2000)
+      console.log('🛡️ Auto-open prevention level 1 lifted - manual dialog opening now allowed')
+    }, 5000)
     
-    return () => clearTimeout(timer)
+    // Set up page load protection for 4 seconds
+    const pageLoadTimer = setTimeout(() => {
+      setPageJustLoaded(false)
+      console.log('🛡️ Page load protection lifted - automatic protections reduced')
+    }, 4000)
+    
+    return () => {
+      clearTimeout(protectionTimer)
+      clearTimeout(pageLoadTimer)
+    }
   }, [])
 
   // Clear any URL parameters that might be causing issues
@@ -120,20 +148,33 @@ export default function InvoiceViewPage() {
       let hasProblematicParams = false
       
       // Check for various parameters that might trigger the dialog
-      const problematicParams = ['action', 'send', 'email', 'dialog', 'form', 'auto', 'open', 'submit', 'save']
+      const problematicParams = ['action', 'send', 'email', 'dialog', 'form', 'auto', 'open', 'submit', 'save', 'create', 'new']
       
       problematicParams.forEach(param => {
         if (url.searchParams.has(param)) {
           url.searchParams.delete(param)
           hasProblematicParams = true
-          console.log(`Cleared URL parameter: ${param}`)
+          console.log(`🧹 Cleared URL parameter: ${param}`)
         }
       })
       
       if (hasProblematicParams) {
         window.history.replaceState({}, '', url.toString())
-        console.log('Cleared URL parameters that might cause dialog to open')
-        console.log('New URL:', url.toString())
+        console.log('🧹 Cleared URL parameters that might cause dialog to open')
+        console.log('🧹 New URL:', url.toString())
+      }
+      
+      // Additional protection: Check if user just came from invoice creation
+      const referrer = document.referrer
+      if (referrer && referrer.includes('/invoices/new')) {
+        console.log('🛡️ DETECTED NAVIGATION FROM INVOICE CREATION - Extra protection enabled')
+        // Extend protection time for users coming from creation
+        setTimeout(() => {
+          if (showEmailDialog) {
+            console.log('🛡️ FORCE CLOSING DIALOG - User came from creation flow')
+            setShowEmailDialog(false)
+          }
+        }, 500)
       }
     }
   }, [])
@@ -143,13 +184,22 @@ export default function InvoiceViewPage() {
     // Wait a bit after component mount to ensure we don't open dialog accidentally
     const timer = setTimeout(() => {
       if (showEmailDialog) {
-        console.warn('EmailDialog was open after page load - forcing it closed')
+        console.warn('⚠️ EmailDialog was open after page load - FORCE CLOSING IT')
         setShowEmailDialog(false)
       }
-    }, 100)
+    }, 200)
     
     return () => clearTimeout(timer)
   }, [showEmailDialog]) // Include showEmailDialog since we're reading its value
+
+  // ULTIMATE PROTECTION: Active monitoring to prevent ANY dialog opening during protection
+  useEffect(() => {
+    if (showEmailDialog && (pageJustLoaded || !autoOpenPrevented)) {
+      console.error('🚨 CRITICAL: EmailDialog opened during protection period - FORCE CLOSING!')
+      console.log('Protection status:', { pageJustLoaded, autoOpenPrevented })
+      setShowEmailDialog(false)
+    }
+  }, [showEmailDialog, pageJustLoaded, autoOpenPrevented])
 
   useEffect(() => {
     const fetchInvoice = async () => {
@@ -332,6 +382,24 @@ export default function InvoiceViewPage() {
             </p>
           </div>
         </div>
+        
+        {/* Protection Status Indicator */}
+        {(pageJustLoaded || !autoOpenPrevented) && (
+          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-4 w-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-2">
+                <p className="text-xs text-green-700">
+                  🛡️ <strong>Auto-Email Protection Active</strong> - Automatic email dialogs are blocked for a few seconds after page load.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Header */}
