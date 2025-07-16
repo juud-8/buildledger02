@@ -3,9 +3,8 @@ import { useEffect, useState } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Edit, DollarSign, Download, Printer } from 'lucide-react'
+import { ArrowLeft, Edit } from 'lucide-react'
 import EmailDialog from '@/components/email/EmailDialog'
-import InvoiceHeader from '@/components/invoices/InvoiceHeader'
 import LineItemsTable from '@/components/invoices/LineItemsTable'
 import Totals from '@/components/invoices/Totals'
 import NotesSection from '@/components/invoices/NotesSection'
@@ -68,11 +67,31 @@ export default function InvoiceViewPage() {
   const [error, setError] = useState('')
   const [sendingInvoice, setSendingInvoice] = useState(false)
   const [markingPaid, setMarkingPaid] = useState(false)
-  const [downloadingPDF, setDownloadingPDF] = useState(false)
   const [showEmailDialog, setShowEmailDialog] = useState(false)
   const [payments, setPayments] = useState<Payment[]>([])
+  const [autoOpenPrevented, setAutoOpenPrevented] = useState(false)
 
   const invoiceId = params.id as string
+
+  // Create a safe version of setShowEmailDialog that logs all attempts to open the dialog
+  const safeSetShowEmailDialog = (value: boolean) => {
+    if (value === true) {
+      console.log('🚨 ATTEMPT TO OPEN EMAIL DIALOG:', {
+        autoOpenPrevented,
+        currentURL: window?.location?.href,
+        stack: new Error().stack?.split('\n').slice(0, 5).join('\n')
+      })
+      
+      // Prevent auto-opening for the first 2 seconds after page load
+      if (!autoOpenPrevented) {
+        console.log('🛡️ PREVENTED AUTO-OPEN - dialog opening blocked during initial load')
+        return
+      }
+    }
+    
+    console.log('📧 EmailDialog state change:', value)
+    setShowEmailDialog(value)
+  }
 
   // Debug logging to help identify the issue
   useEffect(() => {
@@ -84,6 +103,14 @@ export default function InvoiceViewPage() {
   // Ensure showEmailDialog is always false on component mount
   useEffect(() => {
     setShowEmailDialog(false)
+    
+    // Set up auto-open prevention for the first 2 seconds
+    const timer = setTimeout(() => {
+      setAutoOpenPrevented(true)
+      console.log('🛡️ Auto-open prevention lifted - manual dialog opening now allowed')
+    }, 2000)
+    
+    return () => clearTimeout(timer)
   }, [])
 
   // Clear any URL parameters that might be causing issues
@@ -93,7 +120,7 @@ export default function InvoiceViewPage() {
       let hasProblematicParams = false
       
       // Check for various parameters that might trigger the dialog
-      const problematicParams = ['action', 'send', 'email', 'dialog', 'form', 'auto', 'open']
+      const problematicParams = ['action', 'send', 'email', 'dialog', 'form', 'auto', 'open', 'submit', 'save']
       
       problematicParams.forEach(param => {
         if (url.searchParams.has(param)) {
@@ -258,59 +285,8 @@ export default function InvoiceViewPage() {
     }
   }
 
-  const handlePrint = () => {
-    window.print()
-  }
-
-  const handleDownloadPDF = async () => {
-    setDownloadingPDF(true)
-    try {
-      const response = await fetch('/api/generate-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type: 'invoice',
-          documentId: invoiceId
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to generate PDF')
-      }
-
-      const data = await response.json()
-      
-      if (data.success && data.pdfData) {
-        // Convert base64 to blob
-        const byteCharacters = atob(data.pdfData.content)
-        const byteNumbers = new Array(byteCharacters.length)
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i)
-        }
-        const byteArray = new Uint8Array(byteNumbers)
-        const blob = new Blob([byteArray], { type: 'application/pdf' })
-        
-        // Create download link
-        const url = window.URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = data.pdfData.filename
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        window.URL.revokeObjectURL(url)
-      } else {
-        throw new Error('Invalid PDF data received')
-      }
-    } catch (error) {
-      console.error('Error generating PDF:', error)
-      alert('Failed to generate PDF. Please try again.')
-    } finally {
-      setDownloadingPDF(false)
-    }
-  }
+  // Get the client information
+  const client = invoice?.projects?.clients?.[0]
 
   if (loading) {
     return (
@@ -335,56 +311,66 @@ export default function InvoiceViewPage() {
     )
   }
 
-  const isOverdue = invoice.due_date && new Date(invoice.due_date) < new Date() && invoice.status !== 'paid'
-  const client = invoice.projects.clients[0]
-
   return (
     <div className="space-y-6">
+      {/* Clear Page Indicator */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <p className="text-sm text-blue-700">
+              📄 <strong>Invoice View Page</strong> - You are viewing invoice details. This is NOT a send/email form.
+              {invoice.status === 'draft' && (
+                <span className="ml-2">
+                  To email this invoice, click the &quot;📧 Email Invoice&quot; button at the bottom of the page.
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link
-            href="/invoices"
-            className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
-          >
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Back to Invoices
-          </Link>
-        </div>
-        <div className="flex space-x-3">
-          <button
-            onClick={handlePrint}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <Printer className="w-4 h-4 mr-2" />
-            Print
-          </button>
-          <button
-            onClick={handleDownloadPDF}
-            disabled={downloadingPDF}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            {downloadingPDF ? 'Generating...' : 'Download PDF'}
-          </button>
+        <Link
+          href="/invoices"
+          className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          Back to Invoices
+        </Link>
+        <div className="flex space-x-2">
           <Link
             href={`/invoices/${invoice.id}/edit`}
-            className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             <Edit className="w-4 h-4 mr-2" />
-            Edit
+            Edit Invoice
           </Link>
         </div>
       </div>
 
       {/* Invoice Header */}
-      <InvoiceHeader
-        invoiceNumber={invoice.invoice_number}
-        status={invoice.status}
-        totalAmount={invoice.total_amount}
-        createdAt={invoice.created_at}
-        isOverdue={Boolean(isOverdue)}
-      />
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Invoice #{invoice.invoice_number}</h1>
+        <div className="mt-2 flex items-center space-x-4">
+          <span className="text-sm text-gray-600">
+            Status: <span className="font-medium">{invoice.status.toUpperCase()}</span>
+          </span>
+          <span className="text-sm text-gray-600">
+            📄 Viewing Invoice Details
+          </span>
+          {invoice.status === 'draft' && (
+            <span className="text-sm text-blue-600 font-medium">
+              💡 You can email this invoice using the button below
+            </span>
+          )}
+        </div>
+      </div>
 
       {/* Client and Project Info */}
       <div className="bg-white shadow rounded-lg p-6">
@@ -449,8 +435,7 @@ export default function InvoiceViewPage() {
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-lg font-medium text-gray-900">Payments</h2>
           <Link href={`/payments/new?invoiceId=${invoiceId}`} className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center">
-            <DollarSign className="w-4 h-4 mr-2" />
-            Record Payment
+            💰 Record Payment
           </Link>
         </div>
         <div className="overflow-x-auto">
@@ -492,7 +477,7 @@ export default function InvoiceViewPage() {
         status={invoice.status}
         sendingInvoice={sendingInvoice}
         markingPaid={markingPaid}
-        onSend={() => setShowEmailDialog(true)}
+        onSend={() => safeSetShowEmailDialog(true)}
         onMarkAsPaid={handleMarkAsPaid}
         updatedAt={invoice.updated_at}
       />
@@ -500,7 +485,10 @@ export default function InvoiceViewPage() {
       {/* Email Dialog */}
       <EmailDialog
         isOpen={showEmailDialog}
-        onClose={() => setShowEmailDialog(false)}
+        onClose={() => {
+          console.log('📧 EmailDialog manually closed by user')
+          setShowEmailDialog(false)
+        }}
         onSend={handleSendInvoice}
         type="invoice"
         documentNumber={invoice.invoice_number}

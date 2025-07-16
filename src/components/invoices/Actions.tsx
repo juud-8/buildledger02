@@ -12,11 +12,32 @@ type ActionsProps = {
 
 export default function Actions({ status, sendingInvoice, markingPaid, onSend, onMarkAsPaid, updatedAt }: ActionsProps) {
   const handleSendClick = () => {
+    console.log('🚨 Send Invoice button clicked!', { status, sendingInvoice })
+    
     // Add confirmation to prevent accidental sending
-    if (window.confirm('Are you sure you want to send this invoice via email? This will open the email form.')) {
+    const userConfirmed = window.confirm(
+      `Are you sure you want to send this ${status} invoice via email?\n\n` +
+      'This will:\n' +
+      '• Open the email form\n' +
+      '• Allow you to customize the message\n' +
+      '• Send the invoice to the client\n\n' +
+      'Click OK to continue or Cancel to go back.'
+    )
+    
+    if (userConfirmed) {
+      console.log('✅ User confirmed - opening email dialog')
       onSend()
+    } else {
+      console.log('❌ User cancelled - staying on view page')
     }
   }
+
+  const handleMarkAsPaidClick = () => {
+    console.log('💰 Mark as Paid button clicked!', { status, markingPaid })
+    onMarkAsPaid()
+  }
+
+  console.log('🔧 Actions component rendered:', { status, sendingInvoice, markingPaid })
 
   return (
     <div className="bg-white shadow rounded-lg p-6">
@@ -29,16 +50,16 @@ export default function Actions({ status, sendingInvoice, markingPaid, onSend, o
             <Button 
               onClick={handleSendClick} 
               disabled={sendingInvoice} 
-              className="inline-flex items-center"
-              title="Send this invoice via email to the client"
+              className="inline-flex items-center bg-blue-600 hover:bg-blue-700"
+              title="Send this invoice via email to the client (requires confirmation)"
             >
               <Send className="w-4 h-4 mr-2" />
-              {sendingInvoice ? 'Sending...' : 'Email Invoice'}
+              {sendingInvoice ? 'Sending...' : '📧 Email Invoice'}
             </Button>
           )}
           {status !== 'paid' && (
             <Button 
-              onClick={onMarkAsPaid} 
+              onClick={handleMarkAsPaidClick} 
               disabled={markingPaid} 
               className="inline-flex items-center bg-green-600 hover:bg-green-700"
               title="Mark this invoice as paid"
@@ -48,6 +69,11 @@ export default function Actions({ status, sendingInvoice, markingPaid, onSend, o
             </Button>
           )}
         </div>
+      </div>
+      
+      {/* Status indicator for debugging */}
+      <div className="mt-2 text-xs text-gray-400">
+        Status: {status} | Actions available: {status === 'draft' ? 'Email Invoice' : ''} {status !== 'paid' ? 'Mark as Paid' : ''}
       </div>
     </div>
   )
