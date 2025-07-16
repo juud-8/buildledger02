@@ -174,11 +174,13 @@ export default function EditInvoicePage() {
       const lineItemsData = lineItems
         .filter(item => item.description.trim() !== '')
         .map(item => ({
+          invoice_id: invoiceId,
           project_id: formData.project_id,
           item_type: 'service',
           description: item.description,
           quantity: item.quantity,
-          unit_price: item.unit_price
+          unit_price: item.unit_price,
+          total_price: item.quantity * item.unit_price
         }))
 
       if (lineItemsData.length > 0) {
@@ -189,7 +191,7 @@ export default function EditInvoicePage() {
         if (lineItemsError) throw lineItemsError
       }
 
-      router.push(`/invoices/${invoiceId}`)
+      router.push(`/invoices/preview/${invoiceId}?mode=edit`)
     } catch (error) {
       console.error('Error updating invoice:', error)
       setError(error instanceof Error ? error.message : 'Failed to update invoice')
