@@ -51,9 +51,7 @@ export async function POST(request: NextRequest) {
         .from('profiles')
         .insert({
           user_id: user.id,
-          email: user.email,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          email: user.email
         })
       
       if (insertError) {
@@ -130,8 +128,7 @@ export async function POST(request: NextRequest) {
       .from('profiles')
       .update({
         logo_url: publicUrl,
-        logo_filename: fileNameRaw,
-        updated_at: new Date().toISOString()
+        logo_filename: fileNameRaw
       })
       .eq('user_id', user.id)
 
@@ -202,8 +199,7 @@ export async function DELETE() {
       .from('profiles')
       .update({
         logo_url: null,
-        logo_filename: null,
-        updated_at: new Date().toISOString()
+        logo_filename: null
       })
       .eq('user_id', user.id)
 
