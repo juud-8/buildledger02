@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
 import { User, Building, Bell, Shield, Save } from 'lucide-react'
+import LogoUpload from '@/components/ui/LogoUpload'
+import LogoCustomization from '@/components/ui/LogoCustomization'
 
 interface UserProfile {
   id: string
@@ -17,6 +19,14 @@ interface UserProfile {
   country: string | null
   website: string | null
   tax_id: string | null
+  // Logo fields
+  logo_url: string | null
+  logo_filename: string | null
+  logo_position: string | null
+  logo_size: string | null
+  logo_enabled: boolean | null
+  logo_width: number | null
+  logo_height: number | null
   // Settings fields
   notifications_email: boolean | null
   notifications_sms: boolean | null
@@ -89,6 +99,13 @@ export default function SettingsPage() {
     confirm_password: ''
   })
 
+  // Logo state
+  const [logoData, setLogoData] = useState({
+    logo_enabled: true,
+    logo_position: 'top-right',
+    logo_size: 'medium'
+  })
+
   const fetchProfile = useCallback(async () => {
     try {
       const { data, error } = await supabase
@@ -112,6 +129,13 @@ export default function SettingsPage() {
           country: data.country || '',
           website: data.website || '',
           tax_id: data.tax_id || ''
+        })
+        
+        // Set logo data
+        setLogoData({
+          logo_enabled: data.logo_enabled ?? true,
+          logo_position: data.logo_position || 'top-right',
+          logo_size: data.logo_size || 'medium'
         })
       }
     } catch (error) {
@@ -258,6 +282,67 @@ export default function SettingsPage() {
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : 
                type === 'number' ? parseInt(value) : value
     }))
+  }
+
+  // Logo handlers
+  const handleLogoUpload = async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await fetch('/api/upload-logo', {
+      method: 'POST',
+      body: formData
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      console.error('Upload error response:', error)
+      throw new Error(error.error || error.details || 'Failed to upload logo')
+    }
+
+    // Refresh profile to get updated logo URL
+    await fetchProfile()
+  }
+
+  const handleLogoRemove = async () => {
+    const response = await fetch('/api/upload-logo', {
+      method: 'DELETE'
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to remove logo')
+    }
+
+    // Refresh profile to get updated logo URL
+    await fetchProfile()
+  }
+
+  const handleLogoCustomizationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user?.id,
+          email: user?.email,
+          ...logoData,
+          updated_at: new Date().toISOString()
+        })
+
+      if (error) throw error
+      setSuccess('Logo settings updated successfully!')
+      fetchProfile()
+    } catch (error) {
+      console.error('Error updating logo settings:', error)
+      setError(error instanceof Error ? error.message : 'Failed to update logo settings')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const tabs = [
@@ -477,55 +562,94 @@ export default function SettingsPage() {
 
           {/* Business Tab */}
           {activeTab === 'business' && (
-            <form onSubmit={handleProfileSubmit} className="space-y-6">
-              <div>
-                <h3 className="text-lg font-medium text-gray-900">Business Information</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Configure your business details for invoices and quotes.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="space-y-8">
+              {/* Business Information Form */}
+              <form onSubmit={handleProfileSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="company_name" className="block text-sm font-medium text-gray-700">
-                    Company Name
-                  </label>
-                  <input
-                    type="text"
-                    name="company_name"
-                    id="company_name"
-                    value={profileData.company_name}
-                    onChange={handleProfileChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
+                  <h3 className="text-lg font-medium text-gray-900">Business Information</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Configure your business details for invoices and quotes.
+                  </p>
                 </div>
 
-                <div>
-                  <label htmlFor="tax_id" className="block text-sm font-medium text-gray-700">
-                    Tax ID / EIN
-                  </label>
-                  <input
-                    type="text"
-                    name="tax_id"
-                    id="tax_id"
-                    value={profileData.tax_id}
-                    onChange={handleProfileChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                </div>
-              </div>
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="company_name" className="block text-sm font-medium text-gray-700">
+                      Company Name
+                    </label>
+                    <input
+                      type="text"
+                      name="company_name"
+                      id="company_name"
+                      value={profileData.company_name}
+                      onChange={handleProfileChange}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
 
-              <div className="flex justify-end">
-                <button
-                  type="submit"
+                  <div>
+                    <label htmlFor="tax_id" className="block text-sm font-medium text-gray-700">
+                      Tax ID / EIN
+                    </label>
+                    <input
+                      type="text"
+                      name="tax_id"
+                      id="tax_id"
+                      value={profileData.tax_id}
+                      onChange={handleProfileChange}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+
+              {/* Logo Upload Section */}
+              <div className="border-t border-gray-200 pt-8">
+                <LogoUpload
+                  currentLogoUrl={profile?.logo_url}
+                  onLogoUpload={handleLogoUpload}
+                  onLogoRemove={handleLogoRemove}
                   disabled={saving}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </button>
+                />
               </div>
-            </form>
+
+              {/* Logo Customization Section */}
+              <div className="border-t border-gray-200 pt-8">
+                <form onSubmit={handleLogoCustomizationSubmit} className="space-y-6">
+                  <LogoCustomization
+                    logoEnabled={logoData.logo_enabled}
+                    logoPosition={logoData.logo_position}
+                    logoSize={logoData.logo_size}
+                    onLogoEnabledChange={(enabled) => setLogoData(prev => ({ ...prev, logo_enabled: enabled }))}
+                    onLogoPositionChange={(position) => setLogoData(prev => ({ ...prev, logo_position: position }))}
+                    onLogoSizeChange={(size) => setLogoData(prev => ({ ...prev, logo_size: size }))}
+                    disabled={saving}
+                  />
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {saving ? 'Saving...' : 'Save Logo Settings'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           )}
 
           {/* Preferences Tab */}

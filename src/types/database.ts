@@ -15,6 +15,28 @@ export interface Database {
             zip_code: string | null
             trade_type: string | null
             license_number: string | null
+            // Logo fields
+            logo_url: string | null
+            logo_filename: string | null
+            logo_position: string | null
+            logo_size: string | null
+            logo_enabled: boolean | null
+            logo_width: number | null
+            logo_height: number | null
+            // Settings fields
+            notifications_email: boolean | null
+            notifications_sms: boolean | null
+            default_payment_terms: number | null
+            default_currency: string | null
+            invoice_prefix: string | null
+            quote_prefix: string | null
+            auto_send_reminders: boolean | null
+            reminder_days: number | null
+            theme: string | null
+            timezone: string | null
+            website: string | null
+            tax_id: string | null
+            country: string | null
             created_at: string
             updated_at: string
           }
@@ -30,6 +52,28 @@ export interface Database {
             zip_code?: string | null
             trade_type?: string | null
             license_number?: string | null
+            // Logo fields
+            logo_url?: string | null
+            logo_filename?: string | null
+            logo_position?: string | null
+            logo_size?: string | null
+            logo_enabled?: boolean | null
+            logo_width?: number | null
+            logo_height?: number | null
+            // Settings fields
+            notifications_email?: boolean | null
+            notifications_sms?: boolean | null
+            default_payment_terms?: number | null
+            default_currency?: string | null
+            invoice_prefix?: string | null
+            quote_prefix?: string | null
+            auto_send_reminders?: boolean | null
+            reminder_days?: number | null
+            theme?: string | null
+            timezone?: string | null
+            website?: string | null
+            tax_id?: string | null
+            country?: string | null
             created_at?: string
             updated_at?: string
           }
@@ -45,6 +89,28 @@ export interface Database {
             zip_code?: string | null
             trade_type?: string | null
             license_number?: string | null
+            // Logo fields
+            logo_url?: string | null
+            logo_filename?: string | null
+            logo_position?: string | null
+            logo_size?: string | null
+            logo_enabled?: boolean | null
+            logo_width?: number | null
+            logo_height?: number | null
+            // Settings fields
+            notifications_email?: boolean | null
+            notifications_sms?: boolean | null
+            default_payment_terms?: number | null
+            default_currency?: string | null
+            invoice_prefix?: string | null
+            quote_prefix?: string | null
+            auto_send_reminders?: boolean | null
+            reminder_days?: number | null
+            theme?: string | null
+            timezone?: string | null
+            website?: string | null
+            tax_id?: string | null
+            country?: string | null
             created_at?: string
             updated_at?: string
           }

@@ -75,10 +75,10 @@ const generateInvoicePDF = async (invoiceId: string, supabase: SupabaseClient) =
     .eq('project_id', invoice.project_id)
     .order('created_at')
 
-  // Get user profile for company info
+  // Get user profile for company info and logo settings
   const { data: profile } = await supabase
     .from('profiles')
-    .select('company_name, full_name, email, phone')
+    .select('company_name, full_name, email, phone, logo_url, logo_enabled, logo_position, logo_size, logo_width, logo_height')
     .eq('id', invoice.user_id)
     .single()
 
@@ -97,16 +97,103 @@ const generateInvoicePDF = async (invoiceId: string, supabase: SupabaseClient) =
   doc.setFontSize(12)
   doc.setTextColor(52, 73, 94)
   const companyName = profile?.company_name || profile?.full_name || 'Your Company'
-  doc.text(companyName, 120, 25)
   
-  if (profile?.email) {
-    doc.setFontSize(10)
-    doc.setTextColor(127, 140, 141)
-    doc.text(profile.email, 120, 32)
-  }
-  
-  if (profile?.phone) {
-    doc.text(profile.phone, 120, 37)
+  // Add logo if enabled and available
+  if (profile?.logo_enabled && profile?.logo_url) {
+    try {
+      // Calculate logo position and size
+      const logoSize = profile.logo_size === 'small' ? 40 : profile.logo_size === 'large' ? 80 : 60
+      const logoWidth = profile.logo_width || logoSize
+      const logoHeight = profile.logo_height || logoSize
+      
+      let logoX = 120
+      let logoY = 20
+      
+      // Position logo based on user preference
+      switch (profile.logo_position) {
+        case 'top-left':
+          logoX = 20
+          logoY = 20
+          break
+        case 'top-center':
+          logoX = 105 - (logoWidth / 2)
+          logoY = 20
+          break
+        case 'top-right':
+          logoX = 190 - logoWidth
+          logoY = 20
+          break
+        case 'bottom-left':
+          logoX = 20
+          logoY = 250
+          break
+        case 'bottom-center':
+          logoX = 105 - (logoWidth / 2)
+          logoY = 250
+          break
+        case 'bottom-right':
+          logoX = 190 - logoWidth
+          logoY = 250
+          break
+      }
+      
+      // Add logo image to PDF
+      doc.addImage(profile.logo_url, 'JPEG', logoX, logoY, logoWidth, logoHeight)
+      
+      // Adjust company info position if logo is in top-right
+      if (profile.logo_position === 'top-right') {
+        doc.text(companyName, 120, 25 + logoHeight + 5)
+        
+        if (profile?.email) {
+          doc.setFontSize(10)
+          doc.setTextColor(127, 140, 141)
+          doc.text(profile.email, 120, 32 + logoHeight + 5)
+        }
+        
+        if (profile?.phone) {
+          doc.text(profile.phone, 120, 37 + logoHeight + 5)
+        }
+      } else {
+        doc.text(companyName, 120, 25)
+        
+        if (profile?.email) {
+          doc.setFontSize(10)
+          doc.setTextColor(127, 140, 141)
+          doc.text(profile.email, 120, 32)
+        }
+        
+        if (profile?.phone) {
+          doc.text(profile.phone, 120, 37)
+        }
+      }
+    } catch (error) {
+      console.error('Error adding logo to PDF:', error)
+      // Fallback to text-only if logo fails
+      doc.text(companyName, 120, 25)
+      
+      if (profile?.email) {
+        doc.setFontSize(10)
+        doc.setTextColor(127, 140, 141)
+        doc.text(profile.email, 120, 32)
+      }
+      
+      if (profile?.phone) {
+        doc.text(profile.phone, 120, 37)
+      }
+    }
+  } else {
+    // No logo, use original positioning
+    doc.text(companyName, 120, 25)
+    
+    if (profile?.email) {
+      doc.setFontSize(10)
+      doc.setTextColor(127, 140, 141)
+      doc.text(profile.email, 120, 32)
+    }
+    
+    if (profile?.phone) {
+      doc.text(profile.phone, 120, 37)
+    }
   }
   
   // Invoice details
@@ -336,10 +423,10 @@ const generateQuotePDF = async (quoteId: string, supabase: SupabaseClient) => {
     .eq('project_id', quote.project_id)
     .order('created_at')
 
-  // Get user profile for company info
+  // Get user profile for company info and logo settings
   const { data: profile } = await supabase
     .from('profiles')
-    .select('company_name, full_name, email, phone')
+    .select('company_name, full_name, email, phone, logo_url, logo_enabled, logo_position, logo_size, logo_width, logo_height')
     .eq('id', quote.user_id)
     .single()
 
@@ -358,16 +445,103 @@ const generateQuotePDF = async (quoteId: string, supabase: SupabaseClient) => {
   doc.setFontSize(12)
   doc.setTextColor(52, 73, 94)
   const companyName = profile?.company_name || profile?.full_name || 'Your Company'
-  doc.text(companyName, 120, 25)
   
-  if (profile?.email) {
-    doc.setFontSize(10)
-    doc.setTextColor(127, 140, 141)
-    doc.text(profile.email, 120, 32)
-  }
-  
-  if (profile?.phone) {
-    doc.text(profile.phone, 120, 37)
+  // Add logo if enabled and available
+  if (profile?.logo_enabled && profile?.logo_url) {
+    try {
+      // Calculate logo position and size
+      const logoSize = profile.logo_size === 'small' ? 40 : profile.logo_size === 'large' ? 80 : 60
+      const logoWidth = profile.logo_width || logoSize
+      const logoHeight = profile.logo_height || logoSize
+      
+      let logoX = 120
+      let logoY = 20
+      
+      // Position logo based on user preference
+      switch (profile.logo_position) {
+        case 'top-left':
+          logoX = 20
+          logoY = 20
+          break
+        case 'top-center':
+          logoX = 105 - (logoWidth / 2)
+          logoY = 20
+          break
+        case 'top-right':
+          logoX = 190 - logoWidth
+          logoY = 20
+          break
+        case 'bottom-left':
+          logoX = 20
+          logoY = 250
+          break
+        case 'bottom-center':
+          logoX = 105 - (logoWidth / 2)
+          logoY = 250
+          break
+        case 'bottom-right':
+          logoX = 190 - logoWidth
+          logoY = 250
+          break
+      }
+      
+      // Add logo image to PDF
+      doc.addImage(profile.logo_url, 'JPEG', logoX, logoY, logoWidth, logoHeight)
+      
+      // Adjust company info position if logo is in top-right
+      if (profile.logo_position === 'top-right') {
+        doc.text(companyName, 120, 25 + logoHeight + 5)
+        
+        if (profile?.email) {
+          doc.setFontSize(10)
+          doc.setTextColor(127, 140, 141)
+          doc.text(profile.email, 120, 32 + logoHeight + 5)
+        }
+        
+        if (profile?.phone) {
+          doc.text(profile.phone, 120, 37 + logoHeight + 5)
+        }
+      } else {
+        doc.text(companyName, 120, 25)
+        
+        if (profile?.email) {
+          doc.setFontSize(10)
+          doc.setTextColor(127, 140, 141)
+          doc.text(profile.email, 120, 32)
+        }
+        
+        if (profile?.phone) {
+          doc.text(profile.phone, 120, 37)
+        }
+      }
+    } catch (error) {
+      console.error('Error adding logo to PDF:', error)
+      // Fallback to text-only if logo fails
+      doc.text(companyName, 120, 25)
+      
+      if (profile?.email) {
+        doc.setFontSize(10)
+        doc.setTextColor(127, 140, 141)
+        doc.text(profile.email, 120, 32)
+      }
+      
+      if (profile?.phone) {
+        doc.text(profile.phone, 120, 37)
+      }
+    }
+  } else {
+    // No logo, use original positioning
+    doc.text(companyName, 120, 25)
+    
+    if (profile?.email) {
+      doc.setFontSize(10)
+      doc.setTextColor(127, 140, 141)
+      doc.text(profile.email, 120, 32)
+    }
+    
+    if (profile?.phone) {
+      doc.text(profile.phone, 120, 37)
+    }
   }
   
   // Quote details
