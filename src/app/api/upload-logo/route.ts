@@ -30,6 +30,8 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('User authenticated:', user.id)
+    console.log('User email:', user.email)
+    console.log('User session:', !!user)
 
     // --- IMPORTANT: Ensure the 'logos' bucket is public or has correct permissions in Supabase dashboard ---
     // Debug: Check if user profile exists
@@ -47,6 +49,7 @@ export async function POST(request: NextRequest) {
     // If profile doesn't exist, create it first
     if (!existingProfile && profileError?.code === 'PGRST116') {
       console.log('Profile does not exist, creating one...')
+      console.log('Attempting to insert profile with user_id:', user.id)
       const { error: insertError } = await supabase
         .from('profiles')
         .insert({
@@ -55,6 +58,12 @@ export async function POST(request: NextRequest) {
       
       if (insertError) {
         console.error('Failed to create profile:', insertError)
+        console.error('Insert error details:', {
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint,
+          code: insertError.code
+        })
         return NextResponse.json({ 
           error: 'Failed to create user profile', 
           details: insertError.message 
@@ -64,6 +73,12 @@ export async function POST(request: NextRequest) {
       console.log('Profile created successfully')
     } else if (profileError) {
       console.error('Error checking profile:', profileError)
+      console.error('Profile check error details:', {
+        message: profileError.message,
+        details: profileError.details,
+        hint: profileError.hint,
+        code: profileError.code
+      })
       return NextResponse.json({ 
         error: 'Failed to check user profile', 
         details: profileError.message 
