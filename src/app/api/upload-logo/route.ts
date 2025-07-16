@@ -50,8 +50,7 @@ export async function POST(request: NextRequest) {
       const { error: insertError } = await supabase
         .from('profiles')
         .insert({
-          user_id: user.id,
-          email: user.email
+          user_id: user.id
         })
       
       if (insertError) {
