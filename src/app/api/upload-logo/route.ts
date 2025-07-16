@@ -22,6 +22,14 @@ import { createServerAdminClient } from '@/lib/supabase/server-admin'
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerClient()
+    let adminClient: any = null
+    
+    // Try to create admin client, but don't fail if service role key is missing
+    try {
+      adminClient = createServerAdminClient()
+    } catch (error) {
+      console.log('Service role key not available, using regular client')
+    }
     
     // Check authentication
     const { data: { user } } = await supabase.auth.getUser()
@@ -32,6 +40,7 @@ export async function POST(request: NextRequest) {
     console.log('User authenticated:', user.id)
     console.log('User email:', user.email)
     console.log('User session:', !!user)
+    console.log('Admin client available:', !!adminClient)
 
     // --- IMPORTANT: Ensure the 'logos' bucket is public or has correct permissions in Supabase dashboard ---
     // Debug: Check if user profile exists
@@ -58,7 +67,8 @@ export async function POST(request: NextRequest) {
 
       if (nullUserProfile) {
         console.log('Found profile with NULL user_id, updating it...')
-        const { error: updateUserError } = await supabase
+        const clientToUse = adminClient || supabase
+        const { error: updateUserError } = await clientToUse
           .from('profiles')
           .update({
             user_id: user.id,
@@ -91,7 +101,8 @@ export async function POST(request: NextRequest) {
     if (!existingProfile && profileError?.code === 'PGRST116') {
       console.log('Profile does not exist, creating one...')
       console.log('Attempting to insert profile with user_id:', user.id)
-      const { error: insertError } = await supabase
+      const clientToUse = adminClient || supabase
+      const { error: insertError } = await clientToUse
         .from('profiles')
         .insert({
           user_id: user.id,
@@ -187,7 +198,8 @@ export async function POST(request: NextRequest) {
     console.log('Public URL:', publicUrl)
 
     // Update user profile with logo URL
-    const { error: updateError } = await supabase
+    const clientToUse = adminClient || supabase
+    const { error: updateError } = await clientToUse
       .from('profiles')
       .update({
         logo_url: publicUrl,
