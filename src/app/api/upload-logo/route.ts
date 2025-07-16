@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     // --- IMPORTANT: Ensure the 'logos' bucket is public or has correct permissions in Supabase dashboard ---
     // Debug: Check if user profile exists
-    const { data: existingProfile, error: profileError } = await supabase
+    let { data: existingProfile, error: profileError } = await supabase
       .from('profiles')
       .select('id, user_id, logo_url, logo_filename')
       .eq('user_id', user.id)
@@ -46,6 +46,40 @@ export async function POST(request: NextRequest) {
     console.log('User ID:', user.id)
     console.log('Profile user_id:', existingProfile?.user_id)
 
+    // If no profile found with user_id, check if there's a profile with NULL user_id that we should update
+    if (!existingProfile && profileError?.code === 'PGRST116') {
+      console.log('No profile found with user_id, checking for profile with NULL user_id...')
+      const { data: nullUserProfile, error: nullProfileError } = await supabase
+        .from('profiles')
+        .select('id, user_id, logo_url, logo_filename')
+        .is('user_id', null)
+        .limit(1)
+        .single()
+
+      if (nullUserProfile) {
+        console.log('Found profile with NULL user_id, updating it...')
+        const { error: updateUserError } = await supabase
+          .from('profiles')
+          .update({
+            user_id: user.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', nullUserProfile.id)
+
+        if (updateUserError) {
+          console.error('Failed to update profile user_id:', updateUserError)
+          return NextResponse.json({ 
+            error: 'Failed to update profile user_id', 
+            details: updateUserError.message 
+          }, { status: 500 })
+        }
+
+        console.log('Profile user_id updated successfully')
+        // Set existingProfile to the updated profile
+        existingProfile = { ...nullUserProfile, user_id: user.id }
+      }
+    }
+
     // If profile doesn't exist, create it first
     if (!existingProfile && profileError?.code === 'PGRST116') {
       console.log('Profile does not exist, creating one...')
@@ -53,7 +87,8 @@ export async function POST(request: NextRequest) {
       const { error: insertError } = await supabase
         .from('profiles')
         .insert({
-          user_id: user.id
+          user_id: user.id,
+          updated_at: new Date().toISOString()
         })
       
       if (insertError) {
@@ -142,7 +177,8 @@ export async function POST(request: NextRequest) {
       .from('profiles')
       .update({
         logo_url: publicUrl,
-        logo_filename: fileNameRaw
+        logo_filename: fileNameRaw,
+        updated_at: new Date().toISOString()
       })
       .eq('user_id', user.id)
 
@@ -213,7 +249,8 @@ export async function DELETE() {
       .from('profiles')
       .update({
         logo_url: null,
-        logo_filename: null
+        logo_filename: null,
+        updated_at: new Date().toISOString()
       })
       .eq('user_id', user.id)
 
