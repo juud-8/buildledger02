@@ -22,7 +22,6 @@ import { createServerAdminClient } from '@/lib/supabase/server-admin'
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerClient()
-    const adminClient = createServerAdminClient()
     
     // Check authentication
     const { data: { user } } = await supabase.auth.getUser()
@@ -59,8 +58,7 @@ export async function POST(request: NextRequest) {
 
       if (nullUserProfile) {
         console.log('Found profile with NULL user_id, updating it...')
-        // Use admin client to bypass RLS for this update
-        const { error: updateUserError } = await adminClient
+        const { error: updateUserError } = await supabase
           .from('profiles')
           .update({
             user_id: user.id,
@@ -70,6 +68,13 @@ export async function POST(request: NextRequest) {
 
         if (updateUserError) {
           console.error('Failed to update profile user_id:', updateUserError)
+          // If RLS blocks this, provide a helpful error message
+          if (updateUserError.message.includes('row-level security')) {
+            return NextResponse.json({ 
+              error: 'Profile update blocked by security policy. Please contact support.', 
+              details: 'Your profile needs to be properly linked to your account.' 
+            }, { status: 403 })
+          }
           return NextResponse.json({ 
             error: 'Failed to update profile user_id', 
             details: updateUserError.message 
@@ -86,8 +91,7 @@ export async function POST(request: NextRequest) {
     if (!existingProfile && profileError?.code === 'PGRST116') {
       console.log('Profile does not exist, creating one...')
       console.log('Attempting to insert profile with user_id:', user.id)
-      // Use admin client to bypass RLS for profile creation
-      const { error: insertError } = await adminClient
+      const { error: insertError } = await supabase
         .from('profiles')
         .insert({
           user_id: user.id,
@@ -102,6 +106,13 @@ export async function POST(request: NextRequest) {
           hint: insertError.hint,
           code: insertError.code
         })
+        // If RLS blocks this, provide a helpful error message
+        if (insertError.message.includes('row-level security')) {
+          return NextResponse.json({ 
+            error: 'Profile creation blocked by security policy. Please contact support.', 
+            details: 'Unable to create profile due to security restrictions.' 
+          }, { status: 403 })
+        }
         return NextResponse.json({ 
           error: 'Failed to create user profile', 
           details: insertError.message 
@@ -176,7 +187,7 @@ export async function POST(request: NextRequest) {
     console.log('Public URL:', publicUrl)
 
     // Update user profile with logo URL
-    const { error: updateError } = await adminClient
+    const { error: updateError } = await supabase
       .from('profiles')
       .update({
         logo_url: publicUrl,
@@ -186,9 +197,16 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
 
     if (updateError) {
+      console.error('Profile update error:', updateError)
       // Try to delete the uploaded file if profile update fails
       await supabase.storage.from('logos').remove([fileName])
-      console.error('Profile update error:', updateError)
+      // If RLS blocks this, provide a helpful error message
+      if (updateError.message.includes('row-level security')) {
+        return NextResponse.json({ 
+          error: 'Logo update blocked by security policy. Please contact support.', 
+          details: 'Unable to update profile due to security restrictions.' 
+        }, { status: 403 })
+      }
       return NextResponse.json({ 
         error: 'Failed to update profile', 
         details: updateError.message 
