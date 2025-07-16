@@ -17,6 +17,14 @@ export const metadata: Metadata = {
   // Performance optimizations
   robots: 'index, follow',
   viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
+  // App icons and manifest
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/buildledger-icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
   // Preload critical resources
   other: {
     'preload': '/favicon.ico',

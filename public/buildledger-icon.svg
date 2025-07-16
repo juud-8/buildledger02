@@ -1,0 +1,7 @@
+<!-- BuildLedger Icon -->
+<!-- Replace this placeholder with the actual BuildLedger icon SVG or convert the provided icon to SVG format -->
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- This is a placeholder - replace with actual icon -->
+  <rect width="30" height="30" x="1" y="1" rx="6" fill="#FF8C00" stroke="#FF8C00" stroke-width="2"/>
+  <text x="16" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white" text-anchor="middle">BL</text>
+</svg>

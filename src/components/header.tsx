@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { HardHat, Moon, Sun } from "lucide-react"
+import Image from "next/image"
+import { Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 
@@ -12,7 +13,13 @@ export default function Header() {
     <header className="py-6 px-4 md:px-8 lg:px-16">
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2">
-          <HardHat className="w-8 h-8 text-gray-800 dark:text-white" />
+          <Image 
+            src="/buildledger-icon.svg" 
+            alt="BuildLedger Logo" 
+            width={32} 
+            height={32}
+            className="w-8 h-8" 
+          />
           <span className="text-2xl font-bold text-gray-800 dark:text-white">BuildLedger</span>
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">

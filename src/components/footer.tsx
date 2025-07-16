@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { HardHat, Twitter, Linkedin, Facebook } from "lucide-react"
+import Image from "next/image"
+import { Twitter, Linkedin, Facebook } from "lucide-react"
 
 export default function Footer() {
   return (
@@ -7,7 +8,13 @@ export default function Footer() {
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="space-y-4">
           <Link href="/" className="flex items-center gap-2">
-            <HardHat className="w-8 h-8 text-gray-800 dark:text-white" />
+            <Image 
+              src="/buildledger-icon.svg" 
+              alt="BuildLedger Logo" 
+              width={32} 
+              height={32}
+              className="w-8 h-8" 
+            />
             <span className="text-2xl font-bold text-gray-800 dark:text-white">BuildLedger</span>
           </Link>
           <p className="text-gray-500 dark:text-gray-400">Invoicing software for the modern tradesperson.</p>

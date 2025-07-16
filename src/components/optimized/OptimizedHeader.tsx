@@ -3,8 +3,9 @@
 
 import { memo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useTheme } from 'next-themes'
-import { HardHat, Moon, Sun } from '@/lib/icons'
+import { Moon, Sun } from '@/lib/icons'
 
 interface OptimizedHeaderProps {
   className?: string
@@ -20,7 +21,13 @@ const OptimizedHeader = memo(function OptimizedHeader({ className }: OptimizedHe
         <div className="flex items-center justify-between h-16">
           {/* Logo - Optimized with next/link for performance */}
           <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-            <HardHat className="w-6 h-6 text-yellow-500" />
+            <Image 
+              src="/buildledger-icon.svg" 
+              alt="BuildLedger Logo" 
+              width={24} 
+              height={24}
+              className="w-6 h-6" 
+            />
             BuildLedger
           </Link>
 

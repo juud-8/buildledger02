@@ -1,0 +1,7 @@
+<!-- BuildLedger Main Logo -->
+<!-- Replace this placeholder with the actual BuildLedger logo SVG or convert the provided logo to SVG format -->
+<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- This is a placeholder - replace with actual logo -->
+  <rect width="50" height="50" x="5" y="5" rx="8" fill="#FF8C00" stroke="#FF8C00" stroke-width="2"/>
+  <text x="65" y="35" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="currentColor">BuildLedger</text>
+</svg>

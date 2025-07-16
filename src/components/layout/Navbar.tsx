@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSupabase } from '@/lib/hooks/useSupabase'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { 
   Menu, 
@@ -47,8 +48,15 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/dashboard" className="text-xl font-bold text-indigo-600">
-                BuildLedger
+              <Link href="/dashboard" className="flex items-center gap-2">
+                <Image 
+                  src="/buildledger-icon.svg" 
+                  alt="BuildLedger Logo" 
+                  width={28} 
+                  height={28}
+                  className="w-7 h-7" 
+                />
+                <span className="text-xl font-bold text-indigo-600">BuildLedger</span>
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
