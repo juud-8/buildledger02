@@ -18,12 +18,10 @@ export default function Actions({ status, sendingInvoice, markingPaid, onSend, o
           Last updated {new Date(updatedAt).toLocaleDateString()}
         </div>
         <div className="flex space-x-3">
-          {status === 'draft' && (
-            <Button onClick={onSend} disabled={sendingInvoice} className="inline-flex items-center">
-              <Send className="w-4 h-4 mr-2" />
-              {sendingInvoice ? 'Sending...' : 'Send Invoice'}
-            </Button>
-          )}
+          <Button onClick={onSend} disabled={sendingInvoice} className="inline-flex items-center">
+            <Send className="w-4 h-4 mr-2" />
+            {sendingInvoice ? 'Sending...' : 'Send Invoice'}
+          </Button>
           {status !== 'paid' && (
             <Button onClick={onMarkAsPaid} disabled={markingPaid} className="inline-flex items-center bg-green-600 hover:bg-green-700">
               <DollarSign className="w-4 h-4 mr-2" />
