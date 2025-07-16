@@ -14,31 +14,29 @@ export async function POST(request: NextRequest) {
 
     console.log('User authenticated:', user.id)
 
+    // --- IMPORTANT: Ensure the 'logos' bucket is public or has correct permissions in Supabase dashboard ---
     const formData = await request.formData()
-    const file = formData.get('file') as File
-
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+    const file = formData.get('file')
+    // Validate file existence and type
+    if (!file || !(file instanceof Blob)) {
+      return NextResponse.json({ error: 'No file provided or invalid file type' }, { status: 400 })
     }
+    // TypeScript: file is now Blob, but may not have .name/.type/.size in all runtimes
+    // Defensive fallback for name/type/size
+    const fileNameRaw = (file as any).name || 'logo-uploaded-file'
+    const fileType = (file as any).type || ''
+    const fileSize = (file as any).size || 0
 
-    console.log('File received:', {
-      name: file.name,
-      size: file.size,
-      type: file.type
-    })
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
+    if (!fileType.startsWith('image/')) {
       return NextResponse.json({ error: 'Invalid file type. Only images are allowed.' }, { status: 400 })
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    if (fileSize > 5 * 1024 * 1024) {
       return NextResponse.json({ error: 'File size must be less than 5MB' }, { status: 400 })
     }
 
     // Generate unique filename
-    const fileExt = file.name.split('.').pop()
+    const fileExt = fileNameRaw.split('.').pop()
     const fileName = `${user.id}-${Date.now()}.${fileExt}`
 
     console.log('Generated filename:', fileName)
@@ -53,16 +51,18 @@ export async function POST(request: NextRequest) {
       })
 
     if (uploadError) {
+      // Surface the actual Supabase error message
       console.error('Upload error:', uploadError)
-      throw new Error(`Failed to upload file: ${uploadError.message}`)
+      return NextResponse.json({ error: 'Failed to upload file', details: uploadError.message }, { status: 500 })
     }
 
     console.log('File uploaded successfully:', data)
 
     // Get the public URL
-    const { data: { publicUrl } } = supabase.storage
+    const { data: publicUrlData } = supabase.storage
       .from('logos')
       .getPublicUrl(fileName)
+    const publicUrl = publicUrlData?.publicUrl || null
 
     console.log('Public URL:', publicUrl)
 
@@ -71,15 +71,15 @@ export async function POST(request: NextRequest) {
       .from('profiles')
       .update({
         logo_url: publicUrl,
-        logo_filename: file.name,
+        logo_filename: fileNameRaw,
         updated_at: new Date().toISOString()
       })
       .eq('id', user.id)
 
     if (updateError) {
-      console.error('Profile update error:', updateError)
       // Try to delete the uploaded file if profile update fails
       await supabase.storage.from('logos').remove([fileName])
+      console.error('Profile update error:', updateError)
       return NextResponse.json({ 
         error: 'Failed to update profile', 
         details: updateError.message 
@@ -91,13 +91,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       logoUrl: publicUrl,
-      filename: file.name
+      filename: fileNameRaw
     })
 
   } catch (error) {
+    // Surface the error message for easier debugging
     console.error('Logo upload error:', error)
     return NextResponse.json(
-      { error: 'Failed to upload logo', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to upload logo', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
