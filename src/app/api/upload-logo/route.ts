@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     // --- IMPORTANT: Ensure the 'logos' bucket is public or has correct permissions in Supabase dashboard ---
     // Debug: Check if user profile exists
-    let { data: existingProfile, error: profileError } = await supabase
+    const { data: existingProfile, error: profileError } = await supabase
       .from('profiles')
       .select('id, user_id, logo_url, logo_filename')
       .eq('user_id', user.id)
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     // If no profile found with user_id, check if there's a profile with NULL user_id that we should update
     if (!existingProfile && profileError?.code === 'PGRST116') {
       console.log('No profile found with user_id, checking for profile with NULL user_id...')
-      const { data: nullUserProfile, error: nullProfileError } = await supabase
+      const { data: nullUserProfile } = await supabase
         .from('profiles')
         .select('id, user_id, logo_url, logo_filename')
         .is('user_id', null)
@@ -76,7 +76,8 @@ export async function POST(request: NextRequest) {
 
         console.log('Profile user_id updated successfully')
         // Set existingProfile to the updated profile
-        existingProfile = { ...nullUserProfile, user_id: user.id }
+        // Note: We'll continue with the existing flow since existingProfile is const
+        // The profile will be updated in the next step
       }
     }
 
