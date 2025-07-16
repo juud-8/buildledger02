@@ -15,6 +15,18 @@ export async function POST(request: NextRequest) {
     console.log('User authenticated:', user.id)
 
     // --- IMPORTANT: Ensure the 'logos' bucket is public or has correct permissions in Supabase dashboard ---
+    // Debug: Check if user profile exists
+    const { data: existingProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, logo_url, logo_filename')
+      .eq('id', user.id)
+      .single()
+
+    console.log('Existing profile:', existingProfile)
+    console.log('Profile error:', profileError)
+    console.log('User ID:', user.id)
+    console.log('Profile ID:', existingProfile?.id)
+
     const formData = await request.formData()
     const file = formData.get('file')
     // Validate file existence and type
