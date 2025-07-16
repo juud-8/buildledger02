@@ -74,6 +74,28 @@ export default function InvoiceViewPage() {
 
   const invoiceId = params.id as string
 
+  // Debug logging to help identify the issue
+  useEffect(() => {
+    console.log('Invoice view page loaded - invoiceId:', invoiceId)
+    console.log('showEmailDialog initial state:', showEmailDialog)
+  }, [invoiceId])
+
+  // Ensure showEmailDialog is always false on component mount
+  useEffect(() => {
+    setShowEmailDialog(false)
+    
+    // Clear any URL parameters that might be causing issues
+    if (typeof window !== 'undefined' && window.history.replaceState) {
+      const url = new URL(window.location.href)
+      if (url.searchParams.has('action') || url.searchParams.has('send')) {
+        url.searchParams.delete('action')
+        url.searchParams.delete('send')
+        window.history.replaceState({}, '', url.toString())
+        console.log('Cleared URL parameters that might cause dialog to open')
+      }
+    }
+  }, [])
+
   useEffect(() => {
     const fetchInvoice = async () => {
       try {
