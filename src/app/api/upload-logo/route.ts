@@ -22,6 +22,7 @@ import { createServerAdminClient } from '@/lib/supabase/server-admin'
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerClient()
+    const adminClient = createServerAdminClient()
     
     // Check authentication
     const { data: { user } } = await supabase.auth.getUser()
@@ -58,7 +59,8 @@ export async function POST(request: NextRequest) {
 
       if (nullUserProfile) {
         console.log('Found profile with NULL user_id, updating it...')
-        const { error: updateUserError } = await supabase
+        // Use admin client to bypass RLS for this update
+        const { error: updateUserError } = await adminClient
           .from('profiles')
           .update({
             user_id: user.id,
@@ -75,7 +77,6 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('Profile user_id updated successfully')
-        // Set existingProfile to the updated profile
         // Note: We'll continue with the existing flow since existingProfile is const
         // The profile will be updated in the next step
       }
@@ -85,7 +86,8 @@ export async function POST(request: NextRequest) {
     if (!existingProfile && profileError?.code === 'PGRST116') {
       console.log('Profile does not exist, creating one...')
       console.log('Attempting to insert profile with user_id:', user.id)
-      const { error: insertError } = await supabase
+      // Use admin client to bypass RLS for profile creation
+      const { error: insertError } = await adminClient
         .from('profiles')
         .insert({
           user_id: user.id,
@@ -174,7 +176,7 @@ export async function POST(request: NextRequest) {
     console.log('Public URL:', publicUrl)
 
     // Update user profile with logo URL
-    const { error: updateError } = await supabase
+    const { error: updateError } = await adminClient
       .from('profiles')
       .update({
         logo_url: publicUrl,
