@@ -6,15 +6,17 @@ import { createServerAdminClient } from '@/lib/supabase/server-admin'
  * REQUIRED SUPABASE RLS POLICIES FOR THIS API TO WORK:
  * 
  * 1. Allow users to insert their own profile:
- * CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+ * CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
  * 
  * 2. Allow users to update their own profile:
- * CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+ * CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = user_id);
  * 
  * 3. Allow users to read their own profile:
- * CREATE POLICY "Users can read own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+ * CREATE POLICY "Users can read own profile" ON profiles FOR SELECT USING (auth.uid() = user_id);
  * 
  * 4. Ensure the 'logos' storage bucket exists and is public or has correct permissions
+ * 
+ * NOTE: This assumes you have a user_id column (UUID) separate from the id column (bigint)
  */
 
 export async function POST(request: NextRequest) {
@@ -33,14 +35,14 @@ export async function POST(request: NextRequest) {
     // Debug: Check if user profile exists
     const { data: existingProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, logo_url, logo_filename')
-      .eq('id', user.id)
+      .select('id, user_id, logo_url, logo_filename')
+      .eq('user_id', user.id)
       .single()
 
     console.log('Existing profile:', existingProfile)
     console.log('Profile error:', profileError)
     console.log('User ID:', user.id)
-    console.log('Profile ID:', existingProfile?.id)
+    console.log('Profile user_id:', existingProfile?.user_id)
 
     // If profile doesn't exist, create it first
     if (!existingProfile && profileError?.code === 'PGRST116') {
@@ -48,7 +50,7 @@ export async function POST(request: NextRequest) {
       const { error: insertError } = await supabase
         .from('profiles')
         .insert({
-          id: user.id,
+          user_id: user.id,
           email: user.email,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -131,7 +133,7 @@ export async function POST(request: NextRequest) {
         logo_filename: fileNameRaw,
         updated_at: new Date().toISOString()
       })
-      .eq('id', user.id)
+      .eq('user_id', user.id)
 
     if (updateError) {
       // Try to delete the uploaded file if profile update fails
@@ -176,7 +178,7 @@ export async function DELETE() {
     const { data: profile } = await supabase
       .from('profiles')
       .select('logo_filename')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single()
 
     if (profile?.logo_filename) {
@@ -203,7 +205,7 @@ export async function DELETE() {
         logo_filename: null,
         updated_at: new Date().toISOString()
       })
-      .eq('id', user.id)
+      .eq('user_id', user.id)
 
     if (updateError) {
       console.error('Profile update error:', updateError)
