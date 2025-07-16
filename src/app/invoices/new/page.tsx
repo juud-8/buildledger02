@@ -128,11 +128,13 @@ export default function NewInvoicePage() {
 
       // Create line items
       const lineItemsData = data.lineItems.map(item => ({
+        invoice_id: invoice.id,
         project_id: data.project_id,
         item_type: 'service',
         description: item.description,
         quantity: item.quantity,
-        unit_price: item.unit_price
+        unit_price: item.unit_price,
+        total_price: item.quantity * item.unit_price
       }))
 
       if (lineItemsData.length > 0) {
@@ -143,7 +145,7 @@ export default function NewInvoicePage() {
         if (lineItemsError) throw lineItemsError
       }
 
-      router.push(`/invoices/${invoice.id}`)
+      router.push(`/invoices/preview/${invoice.id}?new=true`)
     } catch (error) {
       console.error('Error creating invoice:', error)
       setError('Failed to create invoice')
