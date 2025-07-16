@@ -1,6 +1,5 @@
 import { Send, DollarSign } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useState } from 'react'
 
 type ActionsProps = {
   status: string
@@ -12,8 +11,6 @@ type ActionsProps = {
 }
 
 export default function Actions({ status, sendingInvoice, markingPaid, onSend, onMarkAsPaid, updatedAt }: ActionsProps) {
-  const [showSendConfirmation, setShowSendConfirmation] = useState(false)
-
   const handleSendClick = () => {
     // Add confirmation to prevent accidental sending
     if (window.confirm('Are you sure you want to send this invoice via email? This will open the email form.')) {

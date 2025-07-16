@@ -79,13 +79,15 @@ export default function InvoiceViewPage() {
     console.log('Invoice view page loaded - invoiceId:', invoiceId)
     console.log('showEmailDialog initial state:', showEmailDialog)
     console.log('Current URL:', typeof window !== 'undefined' ? window.location.href : 'N/A')
-  }, [invoiceId])
+  }, [invoiceId, showEmailDialog])
 
-  // Ensure showEmailDialog is always false on component mount and handle URL parameters
+  // Ensure showEmailDialog is always false on component mount
   useEffect(() => {
     setShowEmailDialog(false)
-    
-    // Clear any URL parameters that might be causing issues
+  }, [])
+
+  // Clear any URL parameters that might be causing issues
+  useEffect(() => {
     if (typeof window !== 'undefined' && window.history.replaceState) {
       const url = new URL(window.location.href)
       let hasProblematicParams = false
@@ -120,7 +122,7 @@ export default function InvoiceViewPage() {
     }, 100)
     
     return () => clearTimeout(timer)
-  }, [])
+  }, [showEmailDialog]) // Include showEmailDialog since we're reading its value
 
   useEffect(() => {
     const fetchInvoice = async () => {
