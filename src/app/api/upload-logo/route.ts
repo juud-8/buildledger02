@@ -22,12 +22,12 @@ import { createServerAdminClient } from '@/lib/supabase/server-admin'
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerClient()
-    let adminClient: any = null
+    let adminClient: ReturnType<typeof createServerAdminClient> | null = null
     
     // Try to create admin client, but don't fail if service role key is missing
     try {
       adminClient = createServerAdminClient()
-    } catch (error) {
+    } catch {
       console.log('Service role key not available, using regular client')
     }
     
