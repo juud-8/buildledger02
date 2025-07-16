@@ -23,9 +23,10 @@ export async function POST(request: NextRequest) {
     }
     // TypeScript: file is now Blob, but may not have .name/.type/.size in all runtimes
     // Defensive fallback for name/type/size
-    const fileNameRaw = (file as any).name || 'logo-uploaded-file'
-    const fileType = (file as any).type || ''
-    const fileSize = (file as any).size || 0
+    const fileWithMeta = file as Blob & { name?: string; type?: string; size?: number }
+    const fileNameRaw = fileWithMeta.name || 'logo-uploaded-file'
+    const fileType = fileWithMeta.type || ''
+    const fileSize = fileWithMeta.size || 0
 
     if (!fileType.startsWith('image/')) {
       return NextResponse.json({ error: 'Invalid file type. Only images are allowed.' }, { status: 400 })
