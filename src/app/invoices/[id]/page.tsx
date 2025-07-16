@@ -78,22 +78,48 @@ export default function InvoiceViewPage() {
   useEffect(() => {
     console.log('Invoice view page loaded - invoiceId:', invoiceId)
     console.log('showEmailDialog initial state:', showEmailDialog)
+    console.log('Current URL:', typeof window !== 'undefined' ? window.location.href : 'N/A')
   }, [invoiceId])
 
-  // Ensure showEmailDialog is always false on component mount
+  // Ensure showEmailDialog is always false on component mount and handle URL parameters
   useEffect(() => {
     setShowEmailDialog(false)
     
     // Clear any URL parameters that might be causing issues
     if (typeof window !== 'undefined' && window.history.replaceState) {
       const url = new URL(window.location.href)
-      if (url.searchParams.has('action') || url.searchParams.has('send')) {
-        url.searchParams.delete('action')
-        url.searchParams.delete('send')
+      let hasProblematicParams = false
+      
+      // Check for various parameters that might trigger the dialog
+      const problematicParams = ['action', 'send', 'email', 'dialog', 'form', 'auto', 'open']
+      
+      problematicParams.forEach(param => {
+        if (url.searchParams.has(param)) {
+          url.searchParams.delete(param)
+          hasProblematicParams = true
+          console.log(`Cleared URL parameter: ${param}`)
+        }
+      })
+      
+      if (hasProblematicParams) {
         window.history.replaceState({}, '', url.toString())
         console.log('Cleared URL parameters that might cause dialog to open')
+        console.log('New URL:', url.toString())
       }
     }
+  }, [])
+
+  // Additional safety check to prevent dialog from opening on page load
+  useEffect(() => {
+    // Wait a bit after component mount to ensure we don't open dialog accidentally
+    const timer = setTimeout(() => {
+      if (showEmailDialog) {
+        console.warn('EmailDialog was open after page load - forcing it closed')
+        setShowEmailDialog(false)
+      }
+    }, 100)
+    
+    return () => clearTimeout(timer)
   }, [])
 
   useEffect(() => {

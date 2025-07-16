@@ -252,6 +252,7 @@ export default function DashboardPage() {
               <Link 
                 href="/invoices/new"
                 className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center"
+                title="Create a new invoice (opens form)"
               >
                 Create Invoice
               </Link>

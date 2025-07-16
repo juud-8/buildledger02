@@ -347,7 +347,7 @@ export default function InvoicesPage() {
                       <Link
                         href={`/invoices/${invoice.id}`}
                         className="text-gray-600 hover:text-gray-900"
-                        title="View Invoice"
+                        title="View Invoice Details (does not send)"
                       >
                         <Eye className="w-4 h-4" />
                       </Link>
@@ -454,6 +454,7 @@ export default function InvoicesPage() {
                       <Link
                         href={`/invoices/${invoice.id}`}
                         className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                        title="View invoice details (does not send email)"
                       >
                         View Details
                       </Link>
