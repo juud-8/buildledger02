@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { createServerAdminClient } from '@/lib/supabase/server-admin'
 
+/*
+ * REQUIRED SUPABASE RLS POLICIES FOR THIS API TO WORK:
+ * 
+ * 1. Allow users to insert their own profile:
+ * CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+ * 
+ * 2. Allow users to update their own profile:
+ * CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+ * 
+ * 3. Allow users to read their own profile:
+ * CREATE POLICY "Users can read own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+ * 
+ * 4. Ensure the 'logos' storage bucket exists and is public or has correct permissions
+ */
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerClient()
@@ -26,6 +41,35 @@ export async function POST(request: NextRequest) {
     console.log('Profile error:', profileError)
     console.log('User ID:', user.id)
     console.log('Profile ID:', existingProfile?.id)
+
+    // If profile doesn't exist, create it first
+    if (!existingProfile && profileError?.code === 'PGRST116') {
+      console.log('Profile does not exist, creating one...')
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          email: user.email,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+      
+      if (insertError) {
+        console.error('Failed to create profile:', insertError)
+        return NextResponse.json({ 
+          error: 'Failed to create user profile', 
+          details: insertError.message 
+        }, { status: 500 })
+      }
+      
+      console.log('Profile created successfully')
+    } else if (profileError) {
+      console.error('Error checking profile:', profileError)
+      return NextResponse.json({ 
+        error: 'Failed to check user profile', 
+        details: profileError.message 
+      }, { status: 500 })
+    }
 
     const formData = await request.formData()
     const file = formData.get('file')
