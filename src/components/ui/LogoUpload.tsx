@@ -2,8 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import Image from 'next/image'
-import { Upload, X, Eye, Trash2 } from 'lucide-react'
-import { useLogoSettings } from '@/lib/hooks/useLogoSettings'
+import { Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface LogoUploadProps {
