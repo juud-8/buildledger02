@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useSupabase } from '@/lib/hooks/useSupabase'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Edit, DollarSign, Download, Printer } from 'lucide-react'
 import EmailDialog from '@/components/email/EmailDialog'
@@ -62,7 +62,6 @@ interface Payment {
 export default function InvoiceViewPage() {
   const { user, supabase } = useSupabase()
   const params = useParams()
-  const searchParams = useSearchParams()
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [lineItems, setLineItems] = useState<LineItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -74,17 +73,6 @@ export default function InvoiceViewPage() {
   const [payments, setPayments] = useState<Payment[]>([])
 
   const invoiceId = params.id as string
-
-  // Handle URL parameters to control dialog behavior
-  useEffect(() => {
-    const action = searchParams.get('action')
-    
-    if (action === 'send' && invoice?.status === 'draft') {
-      // Only auto-open send dialog if explicitly requested via URL parameter
-      // and invoice is in draft status
-      setShowEmailDialog(true)
-    }
-  }, [searchParams, invoice?.status])
 
   useEffect(() => {
     const fetchInvoice = async () => {
