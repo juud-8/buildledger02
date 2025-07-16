@@ -625,7 +625,7 @@ export default function SettingsPage() {
                   currentLogoUrl={profile?.logo_url}
                   onLogoUpload={handleLogoUpload}
                   onLogoRemove={handleLogoRemove}
-                  disabled={saving}
+                  onError={(error) => setError(error)}
                 />
               </div>
 
