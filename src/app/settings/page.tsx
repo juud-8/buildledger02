@@ -111,7 +111,7 @@ export default function SettingsPage() {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user?.id)
+        .eq('user_id', user?.id)
         .single()
 
       if (error && error.code !== 'PGRST116') throw error
@@ -150,7 +150,7 @@ export default function SettingsPage() {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user?.id)
+        .eq('user_id', user?.id)
         .single()
 
       if (error && error.code !== 'PGRST116') throw error
@@ -193,7 +193,7 @@ export default function SettingsPage() {
       const { error } = await supabase
         .from('profiles')
         .upsert({
-          id: user?.id,
+          user_id: user?.id,
           email: user?.email,
           ...profileData,
           updated_at: new Date().toISOString()
@@ -220,7 +220,7 @@ export default function SettingsPage() {
       const { error } = await supabase
         .from('profiles')
         .upsert({
-          id: user?.id,
+          user_id: user?.id,
           email: user?.email,
           ...settings,
           updated_at: new Date().toISOString()
@@ -336,7 +336,7 @@ export default function SettingsPage() {
       const { error } = await supabase
         .from('profiles')
         .upsert({
-          id: user?.id,
+          user_id: user?.id,
           email: user?.email,
           ...logoData,
           updated_at: new Date().toISOString()
