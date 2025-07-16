@@ -297,12 +297,15 @@ export default function SettingsPage() {
     if (!response.ok) {
       const error = await response.json()
       console.error('Upload error response:', error)
+      console.error('Response status:', response.status)
+      console.error('Full error object:', error)
       // Show both error and details if available
-      throw new Error(
-        error.details
-          ? `${error.error || 'Failed to upload logo'}: ${error.details}`
-          : error.error || 'Failed to upload logo'
-      )
+      const errorMessage = error.details
+        ? `${error.error || 'Failed to upload logo'}: ${error.details}`
+        : error.error || 'Failed to upload logo'
+      
+      console.error('Throwing error:', errorMessage)
+      throw new Error(errorMessage)
     }
 
     // Refresh profile to get updated logo URL

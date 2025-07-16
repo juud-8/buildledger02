@@ -55,7 +55,11 @@ export default function LogoUpload({
       await onLogoUpload(file)
     } catch (error) {
       console.error('Error uploading logo:', error)
+      console.error('Error type:', typeof error)
+      console.error('Error instanceof Error:', error instanceof Error)
+      console.error('Error message:', error instanceof Error ? error.message : error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to upload logo. Please try again.'
+      console.error('Calling onError with:', errorMessage)
       onError?.(errorMessage)
       setPreviewUrl(currentLogoUrl || null)
     } finally {
