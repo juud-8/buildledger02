@@ -11,6 +11,7 @@ interface LogoUploadProps {
   onLogoRemove: () => Promise<void>
   disabled?: boolean
   className?: string
+  onError?: (error: string) => void
 }
 
 export default function LogoUpload({
@@ -18,7 +19,8 @@ export default function LogoUpload({
   onLogoUpload,
   onLogoRemove,
   disabled = false,
-  className = ''
+  className = '',
+  onError
 }: LogoUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentLogoUrl || null)
@@ -53,7 +55,12 @@ export default function LogoUpload({
       await onLogoUpload(file)
     } catch (error) {
       console.error('Error uploading logo:', error)
-      alert('Failed to upload logo. Please try again.')
+      console.error('Error type:', typeof error)
+      console.error('Error instanceof Error:', error instanceof Error)
+      console.error('Error message:', error instanceof Error ? error.message : error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload logo. Please try again.'
+      console.error('Calling onError with:', errorMessage)
+      onError?.(errorMessage)
       setPreviewUrl(currentLogoUrl || null)
     } finally {
       setIsUploading(false)
@@ -70,7 +77,8 @@ export default function LogoUpload({
       }
     } catch (error) {
       console.error('Error removing logo:', error)
-      alert('Failed to remove logo. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to remove logo. Please try again.'
+      onError?.(errorMessage)
     } finally {
       setIsUploading(false)
     }
