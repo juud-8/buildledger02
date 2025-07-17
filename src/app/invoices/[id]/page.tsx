@@ -78,7 +78,7 @@ export default function InvoiceViewPage() {
   useEffect(() => {
     console.log('Invoice view page loaded - invoiceId:', invoiceId)
     console.log('showEmailDialog initial state:', showEmailDialog)
-  }, [invoiceId])
+  }, [invoiceId, showEmailDialog])
 
   // Ensure showEmailDialog is always false on component mount
   useEffect(() => {
